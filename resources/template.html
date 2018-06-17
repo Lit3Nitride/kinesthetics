@@ -1,0 +1,183 @@
+<!doctype html>
+<html class="no-js init" lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>${title}</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.slim.js"></script>
+  <script>
+    document.addEventListener('contextmenu', event => event.preventDefault())
+
+    var t=0,
+        aspect = 16/9
+
+    $(document).ready(function() {
+    var doResize = function() {
+      setTimeout(function() {
+        if ($(window).width()/aspect < $(window).height()) {
+          $('body')
+            .width($(window).width())
+            .height($(window).width()/aspect)
+            .css('margin-left', 0)
+            .css('margin-top', ($(window).height() - ($(window).width()/aspect))/2 )
+            $('.sweep .sweep-c')
+              .width($(window).width())
+              .height($(window).width()/aspect)
+        } else {
+          $('body')
+            .height($(window).height())
+            .width($(window).height()*aspect)
+            .css('margin-top', 0)
+            .css('margin-left', ($(window).width() - ($(window).height()*aspect))/2 )
+          $('.sweep .sweep-c')
+            .width($(window).height()*aspect)
+            .height($(window).height())
+        }
+      }, 1000)
+    }
+
+    window.onresize = doResize
+    window.onresize()
+
+    $(document).mousedown(function(event) {
+        event.preventDefault()
+        switch (event.which) {
+            case 1:
+              change()
+              break;
+            case 2:
+            case 3:
+              change(false)
+              break;
+        }
+    })
+
+    $("body").keydown(function(e) {
+       if (e.keyCode == 8 || e.keyCode == 37 || e.keyCode == 38){
+         change(false)
+       }
+       if(e.keyCode == 32 || e.keyCode == 39 || e.keyCode == 40){
+         change()
+       }
+    });
+
+    function change(next) {
+      if ($('html, body').hasClass('init')) {
+        $('html, body').removeClass('init')
+      } else {
+        if (next !== false) {
+          if (t < tMap.length) {
+            t++
+            $('html, body').addClass("t" + tMap[t-1])
+          }
+        } else if (t > 0) {
+          $('html, body').removeClass("t" + tMap[t-1])
+          t--
+        }
+      }
+    }
+    })
+  </script>
+  <style>
+    html,
+    body {
+      cursor: none;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      position: relative;
+    }
+    html {
+      background-color: black;
+    }
+    body {
+      background-color: ${background};
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      transition: 0.75s cubic-bezier(0.665, 0.000, 0.345, 1.000);
+    }
+    div[class*="j-"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+    img {
+      width: 100%;
+      height: 100%;
+    }
+    div[class*="j-"] img,
+    div[class*="j-"] svg,
+    div[class*="j-"] .i,
+    div[class*="j-"] canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    div[class*="j-"] img,
+    div[class*="j-"] svg {
+      height: 100%;
+    }
+    div[class*="j-"] svg {
+      width: 100%;
+    }
+    .sweep {
+      overflow: hidden;
+      position: absolute;
+    }
+    .sweep .sweep-c {
+      position: absolute;
+    }
+    .sweep.sweep-top .sweep-c,
+    .sweep.sweep-left .sweep-c {
+      top: 0;
+      left: 0;
+    }
+    .sweep.sweep-top,
+    .sweep.sweep-bottom {
+      width: 100%;
+      height: 0;
+    }
+    .sweep.sweep-top {
+      top: 0;
+    }
+    .sweep.sweep-left {
+      left: 0;
+    }
+    .sweep.sweep-bottom {
+      bottom: 0;
+    }
+    .sweep.sweep-right {
+      right: 0;
+    }
+    .sweep.sweep-left,
+    .sweep.sweep-right {
+      height: 100%;
+      width: 0;
+    }
+    .sweep.sweep-bottom .sweep-c,
+    .sweep.sweep-right .sweep-c {
+      bottom: 0;
+      right: 0;
+    }
+    .sweep.sweep-left .sweep-c,
+    .sweep.sweep-right .sweep-c {
+      width: 100vw;
+      height: 100%;
+    }
+    .sweep.sweep-top .sweep-c,
+    .sweep.sweep-bottom .sweep-c {
+      width: 100%;
+      height: 100vh;
+    }
+  </style>
+  ${head}
+</head>
+<body>${body}</body>
+</html>

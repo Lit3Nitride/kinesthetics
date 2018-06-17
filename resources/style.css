@@ -1,0 +1,93 @@
+
+html,
+body {
+  cursor: none;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  position: relative;
+}
+html {
+  background-color: black;
+}
+* {
+  margin: 0;
+  padding: 0;
+  transition: 0.75s cubic-bezier(0.665, 0.000, 0.345, 1.000);
+}
+div[class*="j-"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+img {
+  width: 100%;
+  height: 100%;
+}
+div[class*="j-"] img,
+div[class*="j-"] svg,
+div[class*="j-"] .i,
+div[class*="j-"] canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+div[class*="j-"] img,
+div[class*="j-"] svg {
+  height: 100%;
+}
+div[class*="j-"] svg {
+  width: 100%;
+}
+.sweep {
+  overflow: hidden;
+  position: absolute;
+}
+.sweep .sweep-c {
+  position: absolute;
+}
+.sweep.sweep-top .sweep-c,
+.sweep.sweep-left .sweep-c {
+  top: 0;
+  left: 0;
+}
+.sweep.sweep-top,
+.sweep.sweep-bottom {
+  width: 100%;
+  height: 0;
+}
+.sweep.sweep-top {
+  top: 0;
+}
+.sweep.sweep-left {
+  left: 0;
+}
+.sweep.sweep-bottom {
+  bottom: 0;
+}
+.sweep.sweep-right {
+  right: 0;
+}
+.sweep.sweep-left,
+.sweep.sweep-right {
+  height: 100%;
+  width: 0;
+}
+.sweep.sweep-bottom .sweep-c,
+.sweep.sweep-right .sweep-c {
+  bottom: 0;
+  right: 0;
+}
+.sweep.sweep-left .sweep-c,
+.sweep.sweep-right .sweep-c {
+  width: 100vw;
+  height: 100%;
+}
+.sweep.sweep-top .sweep-c,
+.sweep.sweep-bottom .sweep-c {
+  width: 100%;
+  height: 100vh;
+}

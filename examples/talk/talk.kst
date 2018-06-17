@@ -1,0 +1,6 @@
+// Main file
+
+background: #414141
+
+import = "content.kst"
+import = "design.kst"
