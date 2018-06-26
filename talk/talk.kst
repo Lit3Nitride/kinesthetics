@@ -1,0 +1,16 @@
+// Main file
+
+title: Making Kinematic Presentations
+background: #414141
+aspect: 16/9
+
+import = content/content.kst
+{
+  1.21: {T: [0.12675,-.5]},
+  1.999: {T: 0}
+}
+
+import = motion/motion.kst
+{
+  1.999: {T: [-0.4,0.94]}
+}
