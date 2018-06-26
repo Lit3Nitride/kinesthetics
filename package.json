@@ -1,0 +1,19 @@
+{
+  "name": "kinesthetics",
+  "version": "0.0.1",
+  "description": "A software that creates kinematic presentation slides",
+  "main": "kinesthetics.js",
+  "author": "Zaw Lin Htoo",
+  "license": "MIT",
+  "homepage": "https://github.com/Lit3Nitride/kinesthetics",
+  "bugs": {
+    "url": "https://github.com/Lit3Nitride/kinesthetics"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Lit3Nitride/kinesthetics.git"
+  },
+  "scripts": {
+    "start": "node server/server.js"
+  }
+}

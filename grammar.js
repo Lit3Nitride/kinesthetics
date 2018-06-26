@@ -6,6 +6,7 @@ const VAL = `(?:"[^"\\r\\n]*"|'[^'\\r\\n]*'|\\S*)`, // "Quoted String", 'Quoted 
       KEY = `[a-zA-Z0-9\\-_]*`, // Keys: Allows for letters, underscores and hyphens
       NUMKEY = `[a-zA-Z0-9\\-_\\.]*`, // Allows decimal point, for state keys.
       NUM = `\\-?[0-9]*\\.?[0-9]+`, // Numbers: 1, 1.3, .3
+      WS2 = /(?: {2,}|[\r\n])/gm,
       ID =  `#${KEY}`,
       CLASS = `(?:\\.${KEY})*`
 
@@ -36,13 +37,11 @@ function objectify(globals, content, callback, level=0, dir="") {
       objectified = 0,
       currContent,
       doCallback = () => {
-        if (objectified == content.length) {
+        if (objectified >= content.length) {
           // Child bug workaround. I'm not sure why it happens
-          for (let k=0; k<slides.length; k++)
-            delete slides[k].children
-
           object.slides = slides
           callback(null, object)
+          return
         }
       }
   globals.forEach(
@@ -57,6 +56,7 @@ function objectify(globals, content, callback, level=0, dir="") {
     }
   )
 
+  content.push("")
   content.forEach(
     (row,i) => {
       // Check if current row is still a child row
@@ -65,6 +65,7 @@ function objectify(globals, content, callback, level=0, dir="") {
         if (!Array.isArray(slides[j[i]].children))
           slides[j[i]].children = []
         slides[j[i]].children.push(row)
+        return
       } else {
         // Handle children from the preceding slide
         if (i > 0 && Array.isArray(slides[j[i-1]].children) && slides[j[i-1]].children.length > 0) {
@@ -78,12 +79,19 @@ function objectify(globals, content, callback, level=0, dir="") {
             slides[j[i-1]].slides = [...slides[j[i-1]].slides, ...childObject.slides]
             delete childObject.slides
             object = {...childObject, ...object}
-            objectified += slides[j[i-1]].children.length
+            objectified += slides[j[i-1]].children.length - 1
             delete slides[j[i-1]].children
 
             doCallback()
           }, level+1)
         }
+      }
+
+      // If we are at an empty element, it means we're done with the last element
+      if (!row) {
+        objectified++
+        doCallback()
+        return
       }
 
       j[i] = i==0 ? 0:j[i-1]+1
@@ -112,7 +120,7 @@ function objectify(globals, content, callback, level=0, dir="") {
               return
             }
 
-            parse(data, (err, obj) => {
+            parse(data, {dir: dir, rootDir: path.dirname(slides[j[i]].src)}, (err, obj) => {
               if (err) {
                 callback(err)
                 return
@@ -149,8 +157,9 @@ function preParse(content, options = {}, callback) {
     options = {}
   }
 
-  let {valuedTypes} = options
+  let {valuedTypes, rootDir} = options
   valuedTypes = valuedTypes || []
+  rootDir = rootDir || ""
 
   // ======================================================
   //   First, we remove the redundant spaces and comments
@@ -159,21 +168,33 @@ function preParse(content, options = {}, callback) {
     // Removes empty lines: matches all line breaks that end with nothing but spaces
     .replace(/[\n\r]^\s*$/gm, "")
 
-    // Removes comments. Matches a "//", an arbitrary number of characters that are not line breaks, until the end of line
+    // Removes end of line whitespaces
+    .replace(/ *$/gm, "")
+
+    // Remove comments
+    // Matches "/*", followed by anything that isn't followed by "*/", then the "*/"
+    .replace(/\/\*([\s\S](?!\*(?!\/)))*\*\//gm,"")
+    // Matches a "//", an arbitrary number of characters that are not line breaks, until the end of line
     .replace(/\/\/[^\n\r]*$/gm,"")
 
     // Parses arrays into a single line: matches the pattern "[", "things that are not [ or ]", "]",
     // then removes all the spaces found
     .replace(
-      /\[([^\]]*)\]/gm,
-      (str, val) => {
+      /\[([^\]]*)\]\s*([\,\}]?)/gm,
+      (str, val, next) => {
         val = val.replace(/\s/gm, "").split(",")
         val.forEach(
-          (str,i) => {
-            val[i] = str.match(new RegExp(NUM))[0] == str ? str:`"${unquote(str)}"`
+          (str, i) => {
+            let matchedStr = str.match(new RegExp(NUM))
+            val[i] = (matchedStr && matchedStr[0] == str)?
+              str.replace(new RegExp(`(${NUM})`, "g"), (a, num) => num.replace(/^(-?)\./, "$10."))
+              : `"${unquote(str)}"`
           }
         )
-        return `[${val.join(",")}]`
+        // If there isn't a comma or an end brace, then it's a global array
+        // So we reintroduce a line break
+        next = next || "\n"
+        return `[${val.join(",")}]${next}`
       }
     )
 
@@ -192,17 +213,36 @@ function preParse(content, options = {}, callback) {
     // (?<!:\s+)\{    matches a "{" that doesn't follow a colon
     // ([\s\S](?!\}[^:]+\}))+   matches everything that doesn't precede a "} that has a bunch of things that are not colons followed by another }"
     // [\s\S]   Since there was a thing purposely not matched previously, match that
-    // \}[^:]+\}    Include the lookaheads for good measure
+    // \}[^:]*\}    Include the lookaheads for good measure
     .replace(
-      // /(?<!:)\s+\{([\s\S](?!\}[^:]+\}))+[\s\S]\}[^:]+\}/gm,
-      /([^:]|^)\s+(\{(?:[\s\S](?!\}[^:]+\}))+[\s\S]\}[^:]+\})/g,
-      (a, start, str) => start + " \"state\":" +
+      // /([^:]|^)\s*(\{(?:[\s\S](?!\}\s*\}))+[\s\S]\}\s*\})/g
+      /([^:]|^)\s*(\{(?:[\s\S](?!\}\s*\}))+[\s\S]\}\s*\})/g,
+      (a, start, str) => {
+        str =
                 // Now each matched string should be a state object "{1:{...}, 2:{...}}"
                 // Return it with "state":, and parse the inside to make it JSON compatible
                 str
-                  // This just removes the whitespace
-                  .replace(/\s/g, "")
-
+                  // This matches for whitespace between property values
+                  // :\s*   colon followed by possible spaces
+                  // [^\}\{\s,] Things that are not "{", "}", "\s", ",",
+                  // (?!\}|,)   and not succeeded by "," or "}"
+                  .replace(
+                    /:\s*(((?:[^\}\{\s,](?!\}|,))*[^\}\{\s,]?\s*)*)/gm,
+                    (a, val) => {
+                      val = val.trim().replace(new RegExp(`(${NUM})`, "g"), (a, num) => (num[0] == "." ? "0":"") + num)
+                      if (val.match(/\[/) == null && val.replace(new RegExp(`(?:${NUM}| )`), "") != "")
+                        val = `"${unquote(val)}"`
+                      return `:${val}`
+                    }
+                  )
+                  .replace(WS2, " ")
+                  .replace(WS2, " ")
+                  .replace(
+//                    new RegExp(`(\\,|\\{)\\s*(\\{|(?:(?:(?:${NUMKEY}|'${NUMKEY}'|"${NUMKEY}"|default)\\s*,?\\s*)+:))`, "gmi"),
+                    new RegExp(`(\\,|\\{)\\s*(\\{|(?:(?:(?:${NUM}|default)\\s*,?\\s*)+:))`, "gmi"),
+                    (a, brace, key) => brace + key.replace(/\s/g, "")
+                  )
+                  .replace(/\}\s*\}/gm, "}}")
                   // This parses the multi-key shortcut.
                   // Essentially, we have something like { ...1:{...}, 1.23, 2.1, 3: {...}, ...}
                   // If we have numbers preceding a colon, then we would want to assign the property
@@ -232,7 +272,34 @@ function preParse(content, options = {}, callback) {
                   // (?<=[\{,]) ... (?=:)   matches something that starts with a "{" and ends with a ":": so, a key
                   // ([^:,\[\]]+)   matches the key itself
                   //.replace(/(?<=[\{,])([^:,\[\]]+)(?=:)/g, "\"$1\"")
-                  .replace(new RegExp(`([\\{,]) *(${NUMKEY}) *(?=:)`, "g"), (str, start, key) => `${start}"${unquote(key)}"`)
+                  .replace(
+                    new RegExp(`([\\{,]) *(${NUMKEY}) *(?=:)`, "g"),
+                    (str, start, key) => `${start}"${unquote(key)}"`
+                  )
+            str = str.substr(1, str.length-2)
+
+            // Here we check for and merge duplicate keys
+            let t = true,
+                ts = {},
+                // We should have the previous few RegExes do our work for us,
+                // so we just match each "t: {k0:v0, k1:v1...}" and parse it
+                // to recreate an object of t-values
+                ///(?:^|,)([^\:\{\}]*):\{([^\{\}]*)\}/g
+                re = new RegExp(`(?:^|,)("${NUMKEY}"):\\{([^\\{\\}]*)\\}`, "g"),
+                tStr = ""
+
+            while (t != null) {
+              if (t[1])
+                ts[t[1]] = (ts[t[1]] ? ts[t[1]] + ",":"") + t[2]
+              t = re.exec(str)
+            }
+
+            // Recombine and return the values
+            for (key in ts)
+              tStr += `${key}:{${ts[key]}},`
+
+            return `${start} "state":{${tStr.substr(0, tStr.length-1)}}`
+        }
     )
 
     // This parses all the key=value strings.
@@ -242,10 +309,15 @@ function preParse(content, options = {}, callback) {
       new RegExp(`([\\r\\n]? *)(${KEY}|'${KEY}'|"${KEY}") *(${CLASS})(${ID})?(${CLASS}) *= *(${VAL})( *)`, "g"),
       (a, prev, key, c1, id, c2, val, next, offset) => {
         key = unquote(key)
-        if (prev.match(/[\r\n]/) != null || offset == 0) // Means it's a type
-          key = `"type":"${key.toLowerCase()}","${valuedTypes[key.toLowerCase()] || "src"}":"${unquote(val)}"`
-        else
-          key = `"${key}":"${unquote(val)}"`
+        val = unquote(val)
+        if (prev.match(/[\r\n]/) != null || offset == 0) { // Means it's a type
+          prev += `"type":"${key.toLowerCase()}",`
+          key = valuedTypes[key.toLowerCase()] || "src"
+          //key = `"${valuedTypes[key.toLowerCase()] || "src"}":"${unquote(val)}"`
+        }
+        if (key == "src")
+          val = path.join(rootDir, val)
+        key = `"${key}":"${val}"`
         return prev + key + classify(c1, c2, id) + (next ? ",":"")
       }
     )
@@ -283,7 +355,8 @@ function preParse(content, options = {}, callback) {
                   content
                     .splice(i, 1)[0]
                     .replace(
-                      new RegExp(` *(${KEY}) *: *(${VAL}|\\[[^\\]]*\\]) *`),
+                      //(` *(${KEY}) *: *(${VAL}|\\[[^\\]]*\\]) *`)
+                      new RegExp(` *(${KEY}) *:(.*)$`),
                       (str, key, val) => `"${unquote(key)}":` + ((val.indexOf("[") == -1) ? `"${unquote(val)}"`:val)
                     )
                 ]
@@ -297,7 +370,7 @@ function preParse(content, options = {}, callback) {
 
 function parse(content, options={}, callback) {
 
-  if (typeof options == "function"){
+  if (typeof options == "function") {
     callback = options
     options = {}
   }
@@ -306,7 +379,6 @@ function parse(content, options={}, callback) {
   delete options.dir
 
   let {globals, content: parsedContent} = preParse(content, options, callback)
-
   objectify(globals, parsedContent, (err, obj) => callback(err, obj), 0, dir)
 }
 

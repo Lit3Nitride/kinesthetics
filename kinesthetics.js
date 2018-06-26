@@ -1,4 +1,3 @@
-
 const fs = require("fs"),
       path = require("path"),
       {parse} = require("./grammar"),
@@ -39,13 +38,72 @@ const fs = require("fs"),
           }
         }
       },
+      customStyles = require("./styles.json"),
       handledSweeps = {
         "left": "width",
         "right": "width",
         "top": "height",
         "bottom": "height"
       }
-function slidesObjToHTML(slides, callback, jstr = "j-", depth=0) {
+
+if (require.main === module) {
+  const args = process.argv.splice(2),
+      READLINE = require("readline"),
+      readlineOpt = {
+        input: process.stdin,
+        output: process.stdout
+      }
+  args.forEach((kstFile) => {
+    const kstFileDat = path.parse(kstFile),
+          filePath = path.join(kstFileDat.root, kstFileDat.dir)
+    let fileName = kstFileDat.name + ".html"
+
+    function saveFile(html) {
+      fs.writeFile(path.join(filePath, fileName), html, {flag: "wx"}, (err) => {
+        if (err && err.code == "EEXIST") {
+          let readline = READLINE.createInterface(readlineOpt)
+          readline.question(
+            `${fileName} already exists in ${filePath}. Please enter another name: `,
+            (newName) => {
+              newName = newName.trim()
+              if (newName) {
+                fileName = newName
+                saveFile(html)
+              }
+              readline.close()
+            }
+          )
+        }
+      })
+    }
+
+    if (filePath.ext == "kst")
+      render(kstFile, (err, html) => {
+        if (err)
+          throw err
+        else
+          saveFile(html)
+      })
+    else
+      console.log(`${kstFileDat.base} does not seem to be a kst file.`)
+
+  })
+}
+
+/*
+  Fix for rounding error. Convert to number, then
+  back to string in order to get the actual written
+  number (since they are all defined )
+*/
+function add(a, b) {
+  a = Number(a)
+  b = Number(b)
+  let aP = a.toString().replace(".", "").length,
+      bP = b.toString().replace(".", "").length
+  return Number((a+b).toPrecision(Math.max(aP, bP)))
+}
+
+function slidesObjToHTML(slides, callback, jstr = "j-", depth=0, offset=0) {
   var slidesHTMLobj = {
         body: [],
         style: "",
@@ -76,7 +134,7 @@ function slidesObjToHTML(slides, callback, jstr = "j-", depth=0) {
 
     for (let key in slides[j])
       if (handledKeys.indexOf(key) == -1)
-        slidesHTMLobj.body[j] += ` ${key} = "${slides[j][key]}"`
+        slidesHTMLobj.body[j] += ` ${key}="${slides[j][key]}"`
 
     slidesHTMLobj.body[j] += ">\n"
 
@@ -84,12 +142,11 @@ function slidesObjToHTML(slides, callback, jstr = "j-", depth=0) {
 
     let tmpStyle = {}
     for (let t0Str in slides[j].state) {
-      t0 = (t0Str.toLowerCase() == "default") ? -Infinity:Number(t0Str)
+      t0 = (t0Str.toLowerCase() == "default") ? -Infinity:add(t0Str, offset)
       if (isNaN(t0)) {
         callback(new Error(`State "${t0Str}" is not a number`))
         return
       }
-
 
       tmpStyle[t0] = ""
       let transformStyles = "",
@@ -97,11 +154,12 @@ function slidesObjToHTML(slides, callback, jstr = "j-", depth=0) {
       if (isFinite(t0)) {
         slidesHTMLobj.t.add(t0)
         tmpStyle[t0] += `.t${t0.toString().replace(".", "-")} `
-        if (typeof slideType[j] != "undefined")
+        if (slideType[j])
           sweepStyle += tmpStyle[t0]
       }
       tmpStyle[t0] += `.${slides[j].class.trim().replace(/ +/g, ".")} {\n`
-      sweepStyle += `.sweep[data-j="${jstr+j}"] {`
+      if (slideType[j])
+        sweepStyle += `.sweep[data-j="${jstr+j}"] {`
 
       for (let key in slides[j].state[t0Str]) {
         if (Object.keys(handledTransforms).indexOf(key) != -1) {
@@ -114,7 +172,7 @@ function slidesObjToHTML(slides, callback, jstr = "j-", depth=0) {
               transformStyles += ` ${handledTransforms[key].name}${["X","Y","Z"][dir]}(${value})`
             })
           }
-        } else if (key == "sweep" && typeof slideType[j] != "undefined") {
+        } else if (key == "sweep" && slideType[j]) {
           let sweepPercent = slides[j].state[t0Str][key]
 
           if (typeof sweepPercent == "number")
@@ -122,13 +180,23 @@ function slidesObjToHTML(slides, callback, jstr = "j-", depth=0) {
 
           sweepStyle += `${slideType[j]}: ${sweepPercent};`
         } else {
-          tmpStyle[t0] += `  ${key}: ${slides[j].state[t0Str][key]};\n`
+
+          value = slides[j].state[t0Str][key]
+          value = (key == "O" && typeof value == "number") ? `${value*100}%`:value
+          if (customStyles.value && customStyles.value[key] && customStyles.value[key][value])
+            value = customStyles.value[key][value]
+          if (customStyles.key && customStyles.key[key])
+            key = customStyles.key[key]
+          if (slideType[j])
+            sweepStyle += `  ${key}: ${value};\n`
+          else
+            tmpStyle[t0] += `  ${key}: ${value};\n`
         }
       }
       if (transformStyles != "")
         tmpStyle[t0] += `  transform:${transformStyles};\n`
       tmpStyle[t0] += "}\n"
-      if (sweepStyle != "")
+      if (slideType[j])
         tmpStyle[t0] += sweepStyle + "}\n"
     }
     Object.keys(tmpStyle).sort().forEach((key) => {
@@ -152,7 +220,7 @@ function slidesObjToHTML(slides, callback, jstr = "j-", depth=0) {
           slidesHTMLobj.body = padding + slidesHTMLobj.body.join("\n" + padding)
           callback(null, slidesHTMLobj)
         }
-      }, jstr+j+"-", depth+1)
+      }, jstr+j+"-", depth+1, add(offset, slides[j].offset || 0))
     } else {
       slidesHTMLobj.body[j] += padding + `</${slides[j].type }>`
       if (typeof slideType[j] != "undefined")
@@ -168,13 +236,13 @@ function slidesObjToHTML(slides, callback, jstr = "j-", depth=0) {
 function render(slides, callback) {
 
   let slidesObj = {
+        aspect: 16/9,
         slides: "",
         title: "",
         templateFile: "resources/template.html",
         background: "#f0f0f0",
         head: "",
-        body: "",
-        footer: ""
+        body: ""
       },
       slidesObjRendered = null
 
@@ -187,12 +255,20 @@ function render(slides, callback) {
     tMap.forEach((value, key) => {
       tMap[key] = value.toString().replace(".", "-")
     })
-    slidesObj.head += `<style>${slidesHTMLobj.style}</style>
-                      <script>var tMap=${JSON.stringify(tMap)}</script>`
+    slidesObj.head += `<style>${slidesHTMLobj.style}</style>`
+    slidesObj.head += `<script>var tMap=${JSON.stringify(tMap)}, aspect=${slidesObj.aspect || 4/3}</script>`
     slidesObj.body += slidesHTMLobj.body
 
+    if (slidesObj.scripts) {
+      slidesObj.scripts = Array.isArray(slidesObj.scripts) ? slidesObj.scripts:[slidesObj.scripts]
+      slidesObj.scripts.forEach((script) => {
+        if (script == "three.js")
+          script = path.join("/resources", script)
+        slidesObj.body += `\n<script src="${script}"></script>`
+      })
+    }
     for (let key in slidesObj)
-      slidesObjRendered = slidesObjRendered.replace(new RegExp("\\${ *" + key + " *}"), slidesObj[key])
+      slidesObjRendered = slidesObjRendered.replace(new RegExp(`\\\${ *${key} *}`, "g"), slidesObj[key])
 
     callback(null, slidesObjRendered)
   }
