@@ -1,0 +1,36 @@
+
+background: #414141
+backgroundInverted: #BEBEBE
+scripts: [three.js, script.js]
+
+slide
+{
+0.5: {T: [0,-1]}
+}
+    slide#3D
+
+    img=three/three-title.svg {
+    default: {T:[0,.369]},
+    0.1: {T: 0},
+    0.4: {T: [0.2725,0.1]}
+    }
+
+    img=three/three-caption0.svg {
+    default, 0.3: {T: [0, 1]},
+    0.2: {T: 0}
+    }
+
+    img=three/three-caption1.svg {
+    default, 0.4: {T: [0, 1]},
+    0.3: {T: 0}
+    }
+
+    img=three/three-caption2.svg {
+    default: {T: [1]},
+    0.4: {T: 0}
+    }
+
+img=three/three-fin.svg {
+default: {T: [0,1]},
+0.5: {T: 0}
+}

@@ -76,8 +76,8 @@ if (require.main === module) {
         }
       })
     }
-
-    if (filePath.ext == "kst")
+    
+    if (kstFileDat.ext == ".kst")
       render(kstFile, (err, html) => {
         if (err)
           throw err
@@ -93,14 +93,29 @@ if (require.main === module) {
 /*
   Fix for rounding error. Convert to number, then
   back to string in order to get the actual written
-  number (since they are all defined )
+  number (since they are all defined)
 */
-function add(a, b) {
+
+function add(a, b, returnStr = false) {
   a = Number(a)
   b = Number(b)
-  let aP = a.toString().replace(".", "").length,
-      bP = b.toString().replace(".", "").length
-  return Number((a+b).toPrecision(Math.max(aP, bP)))
+
+  let aP = a.toString().replace(/./, "").replace(/e-[0-9]*$/i, "").length,
+      bP = b.toString().replace(/./, "").replace(/e-[0-9]*$/i, "").length,
+      c = (a+b).toPrecision(Math.max(aP, bP, 1))
+
+  if (c.match(/^0\./) != null)
+    c = c.replace(/0*$/, "")
+
+  if (!returnStr)
+    return Number(c)
+
+  let cSub = c.indexOf("e")
+
+  if (cSub != -1)
+    c = Number(c).toFixed(Math.max(-parseInt(c.substr(cSub+1)), 0))
+
+  return c
 }
 
 function slidesObjToHTML(slides, callback, jstr = "j-", depth=0, offset=0) {
@@ -152,8 +167,8 @@ function slidesObjToHTML(slides, callback, jstr = "j-", depth=0, offset=0) {
       let transformStyles = "",
           sweepStyle = ""
       if (isFinite(t0)) {
-        slidesHTMLobj.t.add(t0)
-        tmpStyle[t0] += `.t${t0.toString().replace(".", "-")} `
+        slidesHTMLobj.t.add(add(t0, 0, true))
+        tmpStyle[t0] += `.t${add(t0, 0, true).replace(".", "-")} `
         if (slideType[j])
           sweepStyle += tmpStyle[t0]
       }
@@ -251,7 +266,7 @@ function render(slides, callback) {
       callback(err)
       return
     }
-    let tMap = [...slidesHTMLobj.t].sort()
+    let tMap = [...slidesHTMLobj.t].sort((a,b) => a-b)
     tMap.forEach((value, key) => {
       tMap[key] = value.toString().replace(".", "-")
     })
@@ -261,10 +276,15 @@ function render(slides, callback) {
 
     if (slidesObj.scripts) {
       slidesObj.scripts = Array.isArray(slidesObj.scripts) ? slidesObj.scripts:[slidesObj.scripts]
+      if (slidesObj.scripts.indexOf("three.js") != -1)
+        slidesObj.scripts.splice(slidesObj.scripts.indexOf("three.js")+1, 0, "slidesThree.js")
       slidesObj.scripts.forEach((script) => {
-        if (script == "three.js")
+
+        if (["three.js", "slidesThree.js"].indexOf(script) != -1)
           script = path.join("/resources", script)
+
         slidesObj.body += `\n<script src="${script}"></script>`
+
       })
     }
     for (let key in slidesObj)

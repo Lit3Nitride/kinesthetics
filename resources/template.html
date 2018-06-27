@@ -9,7 +9,6 @@
   <style>
     html,
     body {
-      cursor: none;
       height: 100vh;
       width: 100vw;
       overflow: hidden;
@@ -25,6 +24,9 @@
       margin: 0;
       padding: 0;
       transition: .75s cubic-bezier(0.5560641, 0, 0.4324943, 1);
+    }
+    body > *:not(#timeLine) {
+      cursor: none;
     }
     [class*="j-"] {
       position: absolute;
@@ -112,7 +114,6 @@
       width: 100%;
       height: 100%;
       z-index: 9999;
-      filter: invert(100%);
       opacity: .75;
     }
 
@@ -129,9 +130,6 @@
       top: -1000vh;
       left: -1000vw;
     }
-    #ruleTextContainer {
-      filter: invert(100%);
-    }
     #ruleText,
     #timeLine #timeT {
       font-size:3.5px;
@@ -139,12 +137,17 @@
       text-align:center;
       text-anchor:middle;
     }
-    #ruleTextRect,
+    #ruleTextRect{
+      transition: none;
+      fill: ${backgroundInverted};
+    }
     #ruleText {
+      transition: none;
       fill: ${background};
     }
     #rulerLine {
-      stroke: ${background};
+      transition: none;
+      stroke: ${backgroundInverted};
     }
     #timeLine {
       width: 100%;
@@ -153,22 +156,27 @@
       transform: translateY(100%);
       background: ${background};
       opacity: .75;
+      z-index: 10000;
+      cursor: none;
     }
     body.timeActive #timeLine {
       transform: translateY(-50%);
     }
-
+    #timeLine .timeDiv {
+      cursor: none;
+    }
     #timeLine .offsetColour {
-      stop-color: ${background};
-      filter: invert(100%);
+      stop-color: ${backgroundInverted};
     }
     #timeLine #timeL {
-      filter: invert(100%);
-      fill: ${background};
+      fill: ${backgroundInverted};
+    }
+    #timeLine #timeC {
+      transition: .2s ease-in-out;
     }
     #timeLine #timeC,
     #timeLine #timeT {
-      fill: ${background};
+      fill: ${backgroundInverted};
     }
   </style>
   ${head}
@@ -273,7 +281,14 @@ body.onkeydown = function(e) {
   }
 }
 
+var tMapped = []
+for (var i=0; i<tMap.length; i++) {
+  tMapped[i] = tMap[i].replace(/(?!^)-([0-9]*)$/, ".$1")
+}
+
 function change(next) {
+  if (window.disableSlideChange)
+    return
   if (body.classList.contains("init")) {
     body.classList.remove("init")
   } else {
@@ -282,22 +297,24 @@ function change(next) {
         t++
         body.classList.add("t" + tMap[t-1])
         if (typeof window.onSlideChange == "function")
-          window.onSlideChange(t, next)
+          window.onSlideChange(t, tMapped[t-1], next !== false)
       }
     } else if (t > 0) {
       if (typeof window.onSlideChange == "function")
-        window.onSlideChange(t, next)
+        window.onSlideChange(t, tMapped[t-1], next !== false)
       body.classList.remove("t" + tMap[t-1])
       t--
     }
 
     let x = ((135.875-24.5)*t/Math.max(tMap.length, 1) + 24.5) - 0.175
-    console.log(tMap[t-1])
-    $timeT.innerHTML = (tMap[t-1] || "default").replace(/-([0-9]*)$/, ".$1").replace(/e\./, "e-")
+    $timeT.innerHTML = tMapped[t-1] || "default"
     $timeT.setAttribute("x", x)
     $timeC.setAttribute("cx", x)
   }
 }
+
+if (typeof window.onSlideReady == "function")
+  window.onSlideReady()
 </script>
 <!-- ===================================
            Debug and tools start
