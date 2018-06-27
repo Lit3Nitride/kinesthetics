@@ -2,15 +2,30 @@
 
 title: Making Kinematic Presentations
 background: #414141
-aspect: 16/9
+backgroundInverted: #BEBEBE
+scripts: [three.js, three/script.js]
 
 import = content/content.kst
 {
-  1.21: {T: [0.12675,-.5]},
-  1.999: {T: 0}
+1.21: {T: [0.12675, -0.5]},
+1.999: {T: 0},
+3.1: {T: [0, -0.5]}
 }
 
 import = motion/motion.kst
 {
-  1.999: {T: [-0.4,0.94]}
+1.999: {T: [-0.4,0.94]}
+}
+
+import = kinesthetics/kinesthetics.kst offset=2
+{
+default: {T: [0, 0.035]},
+2.999: {T: [-0.4,0.94]}
+}
+
+import = three/three.kst offset=3
+{
+default: {T: [-0.09,0.75], display: none},
+2.999: {display: block},
+3: {T: 0}
 }

@@ -49,10 +49,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.8"
-     inkscape:cx="191.45794"
-     inkscape:cy="147.36817"
+     inkscape:cx="263.77937"
+     inkscape:cy="147.01103"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer2"
+     inkscape:current-layer="layer4"
      showgrid="false"
      inkscape:window-width="3200"
      inkscape:window-height="1752"
@@ -155,6 +155,27 @@
            x="14.270357"
            id="tspan847"
            sodipodi:role="line">Integration With THREE.js</tspan></text>
+    </g>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="title">
+    <g
+       style="display:inline"
+       transform="translate(3.2874291,-209.02161)"
+       id="g844-3">
+      <text
+         id="text849-7"
+         y="256.17068"
+         x="14.270357"
+         style="font-style:normal;font-weight:normal;font-size:10.78625202px;line-height:125%;font-family:sans-serif;letter-spacing:0.22707897px;word-spacing:0px;fill:#f0f0f0;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8.47761631px;font-family:Raleway;-inkscape-font-specification:Raleway;letter-spacing:0px;fill:#f0f0f0;fill-opacity:1;stroke-width:0.26458332px"
+           y="256.17068"
+           x="14.270357"
+           id="tspan847-5"
+           sodipodi:role="line">making kinematic presentations</tspan></text>
     </g>
   </g>
 </svg>

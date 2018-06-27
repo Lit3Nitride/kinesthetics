@@ -9,7 +9,6 @@
   <style>
     html,
     body {
-      cursor: none;
       height: 100vh;
       width: 100vw;
       overflow: hidden;
@@ -25,6 +24,9 @@
       margin: 0;
       padding: 0;
       transition: .75s cubic-bezier(0.5560641, 0, 0.4324943, 1);
+    }
+    body > *:not(#timeLine) {
+      cursor: none;
     }
     [class*="j-"] {
       position: absolute;
@@ -112,7 +114,6 @@
       width: 100%;
       height: 100%;
       z-index: 9999;
-      filter: invert(100%);
       opacity: .75;
     }
 
@@ -129,9 +130,6 @@
       top: -1000vh;
       left: -1000vw;
     }
-    #ruleTextContainer {
-      filter: invert(100%);
-    }
     #ruleText,
     #timeLine #timeT {
       font-size:3.5px;
@@ -139,12 +137,17 @@
       text-align:center;
       text-anchor:middle;
     }
-    #ruleTextRect,
+    #ruleTextRect{
+      transition: none;
+      fill: #BEBEBE;
+    }
     #ruleText {
+      transition: none;
       fill: #414141;
     }
     #rulerLine {
-      stroke: #414141;
+      transition: none;
+      stroke: #BEBEBE;
     }
     #timeLine {
       width: 100%;
@@ -153,22 +156,27 @@
       transform: translateY(100%);
       background: #414141;
       opacity: .75;
+      z-index: 10000;
+      cursor: none;
     }
     body.timeActive #timeLine {
       transform: translateY(-50%);
     }
-
+    #timeLine .timeDiv {
+      cursor: none;
+    }
     #timeLine .offsetColour {
-      stop-color: #414141;
-      filter: invert(100%);
+      stop-color: #BEBEBE;
     }
     #timeLine #timeL {
-      filter: invert(100%);
-      fill: #414141;
+      fill: #BEBEBE;
+    }
+    #timeLine #timeC {
+      transition: .2s ease-in-out;
     }
     #timeLine #timeC,
     #timeLine #timeT {
-      fill: #414141;
+      fill: #BEBEBE;
     }
   </style>
   <style>.t1-21 .j-0 {
@@ -177,110 +185,101 @@
 .t1-999 .j-0 {
   transform: translate(0%);
 }
-.t1 .j-0-0 {
+.t3-1 .j-0 {
+  transform: translateX(0%) translateY(-50%);
+}
+.t-1 .j-0-0 {
+  transform: translateX(0%) translateY(-100%);
+}
+.t1 .j-0-1 {
   transform: translateX(32.5%) translateY(-20.71333%);
 }
-.t1-999 .j-0-0 {
+.t1-999 .j-0-1 {
   transform: translate(0%);
 }
-.t2 .j-0-0 {
+.t2 .j-0-1 {
   transform: translateX(25%) translateY(-37.134444%);
 }
-.t2-999 .j-0-0 {
+.t2-999 .j-0-1 {
   transform: translate(0%);
 }
-.t3 .j-0-0 {
+.t3 .j-0-1 {
   transform: translateX(10.02313%) translateY(-53.825559999999996%);
 }
-.t3-999 .j-0-0 {
-  transform: translate(0%);
+.j-0-1-0 {
 }
-.j-0-0-0 {
+.sweep[data-j="j-0-1-0"] {width: 8.125%;}
+.t0 .j-0-1-0 {
 }
-.sweep[data-j="j-0-0-0"] {width: 8.125%;}
-.t0 .j-0-0-0 {
+.t0 .sweep[data-j="j-0-1-0"] {width: 27%;}
+.t1 .j-0-1-0 {
 }
-.t0 .sweep[data-j="j-0-0-0"] {width: 27%;}
-.t1 .j-0-0-0 {
+.t1 .sweep[data-j="j-0-1-0"] {  z-index: 2;
 }
-.t1 .sweep[data-j="j-0-0-0"] {  z-index: 2;
-}
-.t2 .j-0-0-0 {
+.t2 .j-0-1-0 {
   transform: translateX(0%) translateY(-40%);
 }
-.t2 .sweep[data-j="j-0-0-0"] {}
-.t2-999 .j-0-0-0 {
+.t2 .sweep[data-j="j-0-1-0"] {}
+.t2-999 .j-0-1-0 {
   transform: translate(0%);
 }
-.t2-999 .sweep[data-j="j-0-0-0"] {}
-.t3 .j-0-0-0 {
+.t2-999 .sweep[data-j="j-0-1-0"] {}
+.t3 .j-0-1-0 {
   transform: translateX(0%) translateY(-10%);
 }
-.t3 .sweep[data-j="j-0-0-0"] {}
-.t3-999 .j-0-0-0 {
-  transform: translate(0%);
+.t3 .sweep[data-j="j-0-1-0"] {}
+.j-0-1-1 {
 }
-.t3-999 .sweep[data-j="j-0-0-0"] {}
-.j-0-0-1 {
+.sweep[data-j="j-0-1-1"] {width: 8.125%;}
+.t0-1 .j-0-1-1 {
 }
-.sweep[data-j="j-0-0-1"] {width: 8.125%;}
-.t0-1 .j-0-0-1 {
-}
-.t0-1 .sweep[data-j="j-0-0-1"] {width: 39.5%;}
-.t1 .j-0-0-1 {
+.t0-1 .sweep[data-j="j-0-1-1"] {width: 39.5%;}
+.t1 .j-0-1-1 {
   transform: translateX(0%) translateY(-55.00000000000001%);
 }
-.t1 .sweep[data-j="j-0-0-1"] {}
-.t1-999 .j-0-0-1 {
+.t1 .sweep[data-j="j-0-1-1"] {}
+.t1-999 .j-0-1-1 {
   transform: translate(0%);
 }
-.t1-999 .sweep[data-j="j-0-0-1"] {}
-.t2 .j-0-0-1 {
+.t1-999 .sweep[data-j="j-0-1-1"] {}
+.t2 .j-0-1-1 {
 }
-.t2 .sweep[data-j="j-0-0-1"] {  z-index: 2;
+.t2 .sweep[data-j="j-0-1-1"] {  z-index: 2;
 }
-.t2-999 .j-0-0-1 {
+.t2-999 .j-0-1-1 {
   transform: translate(0%);
 }
-.t2-999 .sweep[data-j="j-0-0-1"] {}
-.t3 .j-0-0-1 {
+.t2-999 .sweep[data-j="j-0-1-1"] {}
+.t3 .j-0-1-1 {
   transform: translateX(0%) translateY(-10%);
 }
-.t3 .sweep[data-j="j-0-0-1"] {}
-.t3-999 .j-0-0-1 {
-  transform: translate(0%);
+.t3 .sweep[data-j="j-0-1-1"] {}
+.j-0-1-2 {
 }
-.t3-999 .sweep[data-j="j-0-0-1"] {}
-.j-0-0-2 {
+.sweep[data-j="j-0-1-2"] {width: 8.125%;}
+.t0-2 .j-0-1-2 {
 }
-.sweep[data-j="j-0-0-2"] {width: 8.125%;}
-.t0-2 .j-0-0-2 {
-}
-.t0-2 .sweep[data-j="j-0-0-2"] {width: 71.8%;}
-.t1 .j-0-0-2 {
+.t0-2 .sweep[data-j="j-0-1-2"] {width: 71.8%;}
+.t1 .j-0-1-2 {
   transform: translateX(0%) translateY(-55.00000000000001%);
 }
-.t1 .sweep[data-j="j-0-0-2"] {}
-.t1-999 .j-0-0-2 {
+.t1 .sweep[data-j="j-0-1-2"] {}
+.t1-999 .j-0-1-2 {
   transform: translate(0%);
 }
-.t1-999 .sweep[data-j="j-0-0-2"] {}
-.t2 .j-0-0-2 {
+.t1-999 .sweep[data-j="j-0-1-2"] {}
+.t2 .j-0-1-2 {
   transform: translateX(0%) translateY(-40%);
 }
-.t2 .sweep[data-j="j-0-0-2"] {}
-.t2-999 .j-0-0-2 {
+.t2 .sweep[data-j="j-0-1-2"] {}
+.t2-999 .j-0-1-2 {
   transform: translate(0%);
 }
-.t2-999 .sweep[data-j="j-0-0-2"] {}
-.t3 .j-0-0-2 {
+.t2-999 .sweep[data-j="j-0-1-2"] {}
+.t3 .j-0-1-2 {
 }
-.t3 .sweep[data-j="j-0-0-2"] {  z-index: 2;
+.t3 .sweep[data-j="j-0-1-2"] {  z-index: 2;
 }
-.t3-999 .j-0-0-2 {
-  transform: translate(0%);
-}
-.t3-999 .sweep[data-j="j-0-0-2"] {}
 .t1-999 .j-1 {
   transform: translateX(-40%) translateY(94%);
 }
@@ -328,16 +327,15 @@
 .t1-204 .j-1-0-1 {
   transform: translateX(-25%) scale(1);
 }
-.t1-2041 .j-1-0-1 {
-  transition-duration: 1.5s;
-}
 .t1-2045 .j-1-0-1 {
+  transition-duration: 1.5s;
   transform: translateX(25%);
 }
 .t1-205 .j-1-0-1 {
   transform: translateX(-25%) scale(1);
 }
 .t1-211 .j-1-0-1 {
+  transition-duration: 1.5s;
   transform: translateX(25%);
 }
 .j-1-0-2-0 {
@@ -672,16 +670,196 @@
   transform: translateX(-50%);
 }
 .t1-233 .sweep[data-j="j-1-5-3-3-0"] {width: 50%;}
-</style><script>var tMap=["0","0-1","0-2","1","1-201","1-202","1-2021","1-2022","1-203","1-2035","1-204","1-2041","1-2045","1-205","1-209","1-21","1-211","1-212","1-213","1-22","1-221","1-222","1-223","1-224","1-225","1-2251","1-2252","1-2253","1-226","1-2261","1-2262","1-229","1-23","1-231","1-232","1-233","1-2351","1-2352","1-2353","1-2354","1-2355","1-999","2","2-999","3","3-999"], aspect=16/9</script>
+.j-2 {
+  transform: translateX(0%) translateY(3.5000000000000004%);
+}
+.t2-999 .j-2 {
+  transform: translateX(-40%) translateY(94%);
+}
+.j-2-0 {
+  transform: translateX(0%) translateY(100%);
+}
+.sweep[data-j="j-2-0"] {height: 164%;}
+.t2-01 .j-2-0 {
+  transform: translate(0%);
+}
+.t2-01 .sweep[data-j="j-2-0"] {height: 64%;}
+.t2-02 .j-2-0 {
+}
+.t2-02 .sweep[data-j="j-2-0"] {height: 71%;}
+.t2-022 .j-2-0 {
+  transform: translateX(0%) translateY(5%);
+}
+.t2-022 .sweep[data-j="j-2-0"] {height: 76%;}
+.t2-03 .j-2-0 {
+  transform: translate(0%);
+}
+.t2-03 .sweep[data-j="j-2-0"] {height: 81%;}
+.j-2-1 {
+  transform: translateX(-1.8499999999999999%);
+}
+.j-2-1-0 {
+  opacity: 0.2;
+  transform: translateX(-100%);
+}
+.t2-015 .j-2-1-0 {
+  transform: translate(0%);
+}
+.t2-031 .j-2-1-0 {
+  opacity: 0;
+  transition-duration: 0s;
+}
+.j-2-1-1 {
+  transform: translateX(-100%);
+}
+.t2-015 .j-2-1-1 {
+  transform: translate(0%);
+}
+.t2-021 .j-2-1-1 {
+  transform: translateX(12%);
+}
+.t2-03 .j-2-1-1 {
+  transform: translate(0%);
+}
+.t2-031 .j-2-1-1-0 {
+  transform: translateX(-15%);
+}
+.t2-05 .j-2-1-1-0 {
+  transform: translateX(-0.5%) translateY(-0.5%);
+}
+.t2-031 .j-2-1-1-1 {
+  transform: translateX(10%);
+}
+.t2-05 .j-2-1-1-1 {
+  transform: translate(0%);
+}
+.t2-031 .j-2-1-1-2 {
+  transform: translateX(35%);
+}
+.t2-05 .j-2-1-1-2 {
+  transform: translateX(0.5%) translateY(0.5%);
+}
+.t2-031 .j-2-1-1-3 {
+  transform: translateX(60%);
+}
+.t2-05 .j-2-1-1-3 {
+  transform: translateX(1%) translateY(1%);
+}
+.j-2-1-2 {
+  transform: translateX(-12%);
+}
+.sweep[data-j="j-2-1-2"] {width: 71%;}
+.t2-021 .j-2-1-2 {
+  transform: translate(0%);
+}
+.t2-021 .sweep[data-j="j-2-1-2"] {}
+.t2-03 .j-2-1-2 {
+  transform: translateX(-12%);
+}
+.t2-03 .sweep[data-j="j-2-1-2"] {width: 71%;}
+.j-2-1-3 {
+}
+.sweep[data-j="j-2-1-3"] {height: 50%;}
+.t2-022 .j-2-1-3 {
+}
+.t2-022 .sweep[data-j="j-2-1-3"] {height: 61%;}
+.t2-03 .j-2-1-3 {
+}
+.t2-03 .sweep[data-j="j-2-1-3"] {height: 50%;}
+.j-2-2 {
+  transform: translateX(100%);
+}
+.t2-05 .j-2-2 {
+  transform: translate(0%);
+}
+.j-2-2-1 {
+  transform: translate(11%);
+}
+.t2-051 .j-2-2-1 {
+  transform: translate(0%);
+}
+.j-2-2-2 {
+  transform: translate(20%);
+}
+.t2-051 .j-2-2-2 {
+  transform: translate(0%);
+}
+.j-2-2-3 {
+  transform: translate(-16.5%);
+}
+.t2-051 .j-2-2-3 {
+  transform: translate(0%);
+}
+.j-2-2-4 {
+  transform: translate(-6.5%);
+}
+.t2-051 .j-2-2-4 {
+  transform: translate(0%);
+}
+.j-3 {
+  display: none;
+  transform: translateX(-9%) translateY(75%);
+}
+.t2-999 .j-3 {
+  display: block;
+}
+.t3 .j-3 {
+  transform: translate(0%);
+}
+.t3-5 .j-3-0 {
+  transform: translateX(0%) translateY(-100%);
+}
+.j-3-0-1 {
+  transform: translateX(0%) translateY(36.9%);
+}
+.t3-1 .j-3-0-1 {
+  transform: translate(0%);
+}
+.t3-4 .j-3-0-1 {
+  transform: translateX(27.250000000000004%) translateY(10%);
+}
+.j-3-0-2 {
+  transform: translateX(0%) translateY(100%);
+}
+.t3-2 .j-3-0-2 {
+  transform: translate(0%);
+}
+.t3-3 .j-3-0-2 {
+  transform: translateX(0%) translateY(100%);
+}
+.j-3-0-3 {
+  transform: translateX(0%) translateY(100%);
+}
+.t3-3 .j-3-0-3 {
+  transform: translate(0%);
+}
+.t3-4 .j-3-0-3 {
+  transform: translateX(0%) translateY(100%);
+}
+.j-3-0-4 {
+  transform: translateX(100%);
+}
+.t3-4 .j-3-0-4 {
+  transform: translate(0%);
+}
+.j-3-1 {
+  transform: translateX(0%) translateY(100%);
+}
+.t3-5 .j-3-1 {
+  transform: translate(0%);
+}
+</style><script>var tMap=["-1","0","0-1","0-2","1","1-201","1-202","1-2021","1-2022","1-203","1-2035","1-204","1-2045","1-205","1-209","1-21","1-211","1-212","1-213","1-22","1-221","1-222","1-223","1-224","1-225","1-2251","1-2252","1-2253","1-226","1-2261","1-2262","1-229","1-23","1-231","1-232","1-233","1-2351","1-2352","1-2353","1-2354","1-2355","1-999","2","2-01","2-015","2-02","2-021","2-022","2-03","2-031","2-05","2-051","2-999","3","3-1","3-2","3-3","3-4","3-5"], aspect=1.7777777777777777</script>
 </head>
 <body>
 <div class="j-0">
-  <div class="j-0-0">
-    <div class="sweep sweep-left" data-j="j-0-0-0"><div class="sweep-c"><img class="j-0-0-0" src="content/content/content-0.svg">
+  <img class="j-0-0" src="content/content/content-title.svg">
+  </img>
+  <div class="j-0-1">
+    <div class="sweep sweep-left" data-j="j-0-1-0"><div class="sweep-c"><img class="j-0-1-0" src="content/content/content-0.svg">
     </img></div></div>
-    <div class="sweep sweep-left" data-j="j-0-0-1"><div class="sweep-c"><img class="j-0-0-1" src="content/content/content-1.svg">
+    <div class="sweep sweep-left" data-j="j-0-1-1"><div class="sweep-c"><img class="j-0-1-1" src="content/content/content-1.svg">
     </img></div></div>
-    <div class="sweep sweep-left" data-j="j-0-0-2"><div class="sweep-c"><img class="j-0-0-2" src="content/content/content-2.svg">
+    <div class="sweep sweep-left" data-j="j-0-1-2"><div class="sweep-c"><img class="j-0-1-2" src="content/content/content-2.svg">
     </img></div></div>
   </div>
 </div>
@@ -691,7 +869,7 @@
     </img>
     <img class="j-1-0-1" src="motion/ball/ball/ball-ball1.svg">
     </img>
-    <div class="j-1-0-2" id="timeline">
+    <div class="j-1-0-2">
       <div class="sweep sweep-left" data-j="j-1-0-2-0"><div class="sweep-c"><img class="j-1-0-2-0" src="motion/ball/ball/ball-line.svg">
       </img></div></div>
       <div class="sweep sweep-top" data-j="j-1-0-2-1"><div class="sweep-c"><img class="j-1-0-2-1" src="motion/ball/ball/ball-stop0.svg">
@@ -823,6 +1001,67 @@
     </div>
   </div>
 </div>
+<div class="j-2" offset="2">
+  <div class="sweep sweep-top" data-j="j-2-0"><div class="sweep-c"><img class="j-2-0" src="kinesthetics/kinesthetics/kinesthetics-fixedTitle.svg">
+  </img></div></div>
+  <div class="j-2-1">
+    <div class="j-2-1-0">
+      <img class="j-2-1-0-0" src="kinesthetics/kinesthetics/kinesthetics-fixedS0.svg">
+      </img>
+      <img class="j-2-1-0-1" src="kinesthetics/kinesthetics/kinesthetics-fixedS1.svg">
+      </img>
+      <img class="j-2-1-0-2" src="kinesthetics/kinesthetics/kinesthetics-fixedS2.svg">
+      </img>
+      <img class="j-2-1-0-3" src="kinesthetics/kinesthetics/kinesthetics-fixedS3.svg">
+      </img>
+    </div>
+    <div class="j-2-1-1">
+      <img class="j-2-1-1-0" src="kinesthetics/kinesthetics/kinesthetics-fixedS0.svg">
+      </img>
+      <img class="j-2-1-1-1" src="kinesthetics/kinesthetics/kinesthetics-fixedS1.svg">
+      </img>
+      <img class="j-2-1-1-2" src="kinesthetics/kinesthetics/kinesthetics-fixedS2.svg">
+      </img>
+      <img class="j-2-1-1-3" src="kinesthetics/kinesthetics/kinesthetics-fixedS3.svg">
+      </img>
+    </div>
+    <div class="sweep sweep-right" data-j="j-2-1-2"><div class="sweep-c"><img class="j-2-1-2" src="kinesthetics/kinesthetics/kinesthetics-fixedArrow.svg">
+    </img></div></div>
+    <div class="sweep sweep-top" data-j="j-2-1-3"><div class="sweep-c"><img class="j-2-1-3" src="kinesthetics/kinesthetics/kinesthetics-fixedX.svg">
+    </img></div></div>
+  </div>
+  <div class="j-2-2">
+    <img class="j-2-2-0" src="kinesthetics/kinesthetics/kinesthetics-numTitle.svg">
+    </img>
+    <img class="j-2-2-1" src="kinesthetics/kinesthetics/kinesthetics-num0.svg">
+    </img>
+    <img class="j-2-2-2" src="kinesthetics/kinesthetics/kinesthetics-num1.svg">
+    </img>
+    <img class="j-2-2-3" src="kinesthetics/kinesthetics/kinesthetics-num2.svg">
+    </img>
+    <img class="j-2-2-4" src="kinesthetics/kinesthetics/kinesthetics-num3.svg">
+    </img>
+  </div>
+</div>
+<div class="j-3" offset="3">
+  <div class="j-3-0">
+    <div class="j-3-0-0" id="3D">
+    </div>
+    <img class="j-3-0-1" src="three/three/three-title.svg">
+    </img>
+    <img class="j-3-0-2" src="three/three/three-caption0.svg">
+    </img>
+    <img class="j-3-0-3" src="three/three/three-caption1.svg">
+    </img>
+    <img class="j-3-0-4" src="three/three/three-caption2.svg">
+    </img>
+  </div>
+  <img class="j-3-1" src="three/three/three-fin.svg">
+  </img>
+</div>
+<script src="../resources/three.js"></script>
+<script src="../resources/slidesThree.js"></script>
+<script src="three/script.js"></script>
 <script>
 document.oncontextmenu = function (e) {
   return false
@@ -921,7 +1160,14 @@ body.onkeydown = function(e) {
   }
 }
 
+var tMapped = []
+for (var i=0; i<tMap.length; i++) {
+  tMapped[i] = tMap[i].replace(/(?!^)-([0-9]*)$/, ".$1")
+}
+
 function change(next) {
+  if (window.disableSlideChange)
+    return
   if (body.classList.contains("init")) {
     body.classList.remove("init")
   } else {
@@ -930,22 +1176,24 @@ function change(next) {
         t++
         body.classList.add("t" + tMap[t-1])
         if (typeof window.onSlideChange == "function")
-          window.onSlideChange(t, next)
+          window.onSlideChange(t, tMapped[t-1], next !== false)
       }
     } else if (t > 0) {
       if (typeof window.onSlideChange == "function")
-        window.onSlideChange(t, next)
+        window.onSlideChange(t, tMapped[t-1], next !== false)
       body.classList.remove("t" + tMap[t-1])
       t--
     }
 
     let x = ((135.875-24.5)*t/Math.max(tMap.length, 1) + 24.5) - 0.175
-    console.log(tMap[t-1])
-    $timeT.innerHTML = (tMap[t-1] || "default").replace(/-([0-9]*)$/, ".$1").replace(/e\./, "e-")
+    $timeT.innerHTML = tMapped[t-1] || "default"
     $timeT.setAttribute("x", x)
     $timeC.setAttribute("cx", x)
   }
 }
+
+if (typeof window.onSlideReady == "function")
+  window.onSlideReady()
 </script>
 <!-- ===================================
            Debug and tools start

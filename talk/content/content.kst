@@ -1,37 +1,43 @@
 // Content Page
+background: #414141
+backgroundInverted: #BEBEBE
+
+img=content/content-title.svg {
+-1: {T: [0, -1]}
+}
 
 slide
 {
-1.999, 2.999, 3.999: {T:0},
+1.999, 2.999: {T:0},
 1: {T: [0.325,-0.2071333]},
 2: {T: [0.25, -0.37134444]},
 3: {T: [0.1002313, -0.5382556]}
 }
-    img="content/content-0.svg" sweep="left"
+    img=content/content-0.svg sweep=left
     {
     default: {sweep: 0.08125},
     0: {sweep: 0.27},
-    2.999,3.999: {T: 0},
+    2.999: {T: 0},
     1: {z-index: 2},
     2: {T: [0, -0.4]},
     3: {T: [0, -0.1]}
     }
 
-    img="content/content-1.svg" sweep="left"
+    img=content/content-1.svg sweep=left
     {
     default: {sweep: 0.08125},
     0.1: {sweep: 0.395},
-    1.999,2.999,3.999: {T: 0},
+    1.999,2.999: {T: 0},
     1: {T: [0, -0.55]},
     2: {z-index: 2},
     3: {T: [0, -0.1]}
     }
 
-    img="content/content-2.svg" sweep="left"
+    img=content/content-2.svg sweep=left
     {
     default: {sweep: 0.08125},
     0.2: {sweep: 0.718},
-    1.999,2.999,3.999: {T: 0},
+    1.999,2.999: {T: 0},
     1: {T: [0, -0.55]},
     2: {T: [0, -0.4]},
     3: {z-index: 2}

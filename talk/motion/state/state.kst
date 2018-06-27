@@ -1,30 +1,31 @@
 background: #414141
+backgroundInverted: #BEBEBE
 
 img=state/state-title.svg
 
 import=example/example.kst offset=0.005
 {
-  default: {S: 0.15, T: [-2.75, 4]},
-  0.001: {S: 0.15, T: [-2.75]},
-  0.003: {S: 0.5, T: 0}
+default: {S: 0.15, T: [-2.75, 4]},
+0.001: {S: 0.15, T: [-2.75]},
+0.003: {S: 0.5, T: 0}
 }
     img=border.svg
 
 slide
     slide
     {
-      default: {S: 0.15, T: [-1.65, 4], t0: 0.1s},
-      0.001: {S: 0.15, T: [-1.65]},
-      0.003: {S: 0.5, T: 0, opacity: 0}
+    default: {S: 0.15, T: [-1.65, 4], t0: 0.1s},
+    0.001: {S: 0.15, T: [-1.65]},
+    0.003: {S: 0.5, T: 0, opacity: 0}
     }
         img=border.svg
         img=example/example/example-title.svg
 
     slide
     {
-      default: {S: 0.15, T: [-0.55, 4], t0: 0.2s},
-      0.001: {S: 0.15, T: [-0.55]},
-      0.003: {S: 0.5, T: 0, opacity: 0}
+    default: {S: 0.15, T: [-0.55, 4], t0: 0.2s},
+    0.001: {S: 0.15, T: [-0.55]},
+    0.003: {S: 0.5, T: 0, opacity: 0}
     }
         img=border.svg
         img=example/example/example-title.svg
@@ -32,9 +33,9 @@ slide
 
     slide
     {
-      default: {S: 0.15, T: [0.55, 4], t0: 0.3s},
-      0.001: {S: 0.15, T: [0.55]},
-      0.003: {S: 0.5, T: 0, opacity: 0}
+    default: {S: 0.15, T: [0.55, 4], t0: 0.3s},
+    0.001: {S: 0.15, T: [0.55]},
+    0.003: {S: 0.5, T: 0, opacity: 0}
     }
         img=border.svg
         img=example/example/example-title.svg
@@ -42,9 +43,9 @@ slide
 
     slide
     {
-      default: {S: 0.15, T: [1.65, 4], t0: 0.4s},
-      0.001: {S: 0.15, T: [1.65]},
-      0.003: {S: 0.5, T: 0, opacity: 0}
+    default: {S: 0.15, T: [1.65, 4], t0: 0.4s},
+    0.001: {S: 0.15, T: [1.65]},
+    0.003: {S: 0.5, T: 0, opacity: 0}
     }
         img=border.svg
         img=example/example/example-title.svg
@@ -52,9 +53,9 @@ slide
 
     slide
     {
-      default: {S: 0.15, T: [2.75, 4], t0: 0.5s},
-      0.001: {S: 0.15, T: [2.75]},
-      0.003: {S: 0.5, T: 0, opacity: 0}
+    default: {S: 0.15, T: [2.75, 4], t0: 0.5s},
+    0.001: {S: 0.15, T: [2.75]},
+    0.003: {S: 0.5, T: 0, opacity: 0}
     }
         img=border.svg
         img=example/example/example-title.svg
@@ -62,33 +63,33 @@ slide
 
 slide
 {
-  default: {T: [0, 0.5]},
-  0.002: {T: 0},
-  0.003: {T: [0.9,0.1], S: 2}
+default: {T: [0, 0.5]},
+0.002: {T: 0},
+0.003: {T: [0.9,0.1], S: 2}
 }
     slide
       img=labels/labels-t0.svg
       slide sweep=top
       {
-        default: {sweep: 0.62}
+      default: {sweep: 0.62}
       }
           img=labels/labels-ts.svg sweep=bottom
           {
-            default: {sweep: 0.41, T: [0, -0.59]},
-            0.0051: {T: [0, -0.625]},
-            0.0052: {T: [0, -0.66]},
-            0.0053: {T: [0, -0.695]},
-            0.0054: {T: [0, -0.73]},
-            0.0055: {T: [0, -0.765]}
+          default: {sweep: 0.41, T: [0, -0.59]},
+          0.0051: {T: [0, -0.625]},
+          0.0052: {T: [0, -0.66]},
+          0.0053: {T: [0, -0.695]},
+          0.0054: {T: [0, -0.73]},
+          0.0055: {T: [0, -0.765]}
           }
 
     slide sweep=left
     {
-      default: {sweep: 1},
-      0.003: {sweep: 0.5}
+    default: {sweep: 1},
+    0.003: {sweep: 0.5}
     }
         img=labels/labels-t1.svg sweep=right
         {
-          default: {sweep: 1},
-          0.003: {sweep: 0.5, T: [-0.5]}
+        default: {sweep: 1},
+        0.003: {sweep: 0.5, T: [-0.5]}
         }
