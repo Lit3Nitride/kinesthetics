@@ -1,0 +1,167 @@
+<!doctype html>
+<html class="no-js init" lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      position: relative;
+      background-color: black;
+    }
+    iframe {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      width: calc(100% - 500px);
+      height: 100%;
+      margin: 0;
+      border: 0;
+      padding: 0;
+      transition: .25s cubic-bezier(0.5560641, 0, 0.4324943, 1);
+    }
+    #editor-container {
+      transition: .75s cubic-bezier(0.5560641, 0, 0.4324943, 1);
+    }
+    #editor-container-button > span,
+    #editor-container-button {
+      transition: .25s cubic-bezier(0.5560641, 0, 0.4324943, 1);
+    }
+    #editor-container-button {
+      display: block;
+      position: absolute;
+      left: -25px;
+      width: 25px;
+      background-color: rgba(255, 255, 255, 0);
+      z-index: 99;
+      height: 100%;
+      top: 0;
+      bottom: 0;
+      cursor: pointer;
+    }
+    #editor-container-button:hover {
+      background-color: rgba(255, 255, 255, .25);
+    }
+    #editor-container {
+      transform: translateX(100%);
+    }
+    #editor-container.active {
+      transform: none;
+    }
+    #editor-container.active #editor-container-button > span {
+      transform: rotateZ(180deg);
+    }
+    #editor-container-button > span {
+      display: block;
+      position: absolute;
+      top: 50%;
+      right: 0;
+      left: 0;
+      text-align: center;
+      transform: translateY(-50%);
+      line-height: 0;
+      font-weight: bolder;
+      font-size: 1.5rem;
+    }
+    #editor-container {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 500px;
+      bottom: 0;
+    }
+    #editor {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      font-size: 1rem;
+    }
+    #iframeContainer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+    }
+  </style>
+  <script src="kinesthetics-browser.js"></script>
+</head>
+<body>
+<div id="iframe-container">
+  <iframe seamless>
+  </iframe>
+</div>
+<div id="editor-container" class="active">
+<div id="editor-container-button"><span>&larr;</span></div>
+<div id="editor">background: #414141
+backgroundInverted: #BEBEBE
+
+img=slides/example-title.svg
+{
+default: {T: [0, 0.35]},
+0.0001: {T: 0}
+}
+
+img=slides/example-content.svg sweep=top
+{
+default: {sweep: 0.38},
+0.0002: {sweep: 0.48},
+0.0003: {sweep: 0.58},
+0.0004: {sweep: 0.68},
+0.0005: {sweep: 0.73}
+}</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.3.3/ace.js" type="text/javascript" charset="utf-8"></script>
+<script>
+    var editor = ace.edit("editor")
+    editor.setTheme("ace/theme/monokai")
+    editor.commands.addCommand({
+      name: 'saveFile',
+        bindKey: {
+        win: 'Ctrl-S',
+        mac: 'Command-S',
+        sender: 'editor|cli'
+      },
+      exec: function(env, args, request) {
+        try {
+          render(env.getValue(), (err, html) => {
+          if (err)
+            console.log(err)
+          else
+            $iframe.setAttribute("srcdoc", html)
+          })
+        } catch(err) {
+          console.log(err)
+        }
+      }
+    })
+    var $editorContainer = document.getElementById("editor-container"),
+        $iframe = document.getElementsByTagName("iframe")[0]
+    document.getElementById("editor-container-button").onclick = function(e) {
+      if ($editorContainer.classList.contains("active")) {
+        $iframe.style.width = "100%"
+        $editorContainer.classList.remove("active")
+        $iframe.contentWindow.focus()
+      } else {
+        $iframe.style.width = "calc(100% - 500px)"
+        $editorContainer.classList.add("active")
+      }
+    }
+    document.getElementById("iframe-container").onmouseover = function(e) {
+      $iframe.contentWindow.focus()
+    }
+    document.getElementById("iframe-container").onmouseout = function(e) {
+      $iframe.contentWindow.blur()
+    }
+  </script>
+</body>
+</html>
