@@ -1,0 +1,42 @@
+background: #414141
+scripts: [three.js, script.js]
+
+slide
+{
+5: {T: [0,-1]}
+}
+    slide#3D
+    {
+    2: {z-index: 2}
+    }
+
+    img=talk/three/three/three-title.svg
+    {
+    default: {T:[0,.369]},
+    1: {T: 0},
+    4: {T: [0.2725,0.1]}
+    }
+
+    img=talk/three/three/three-caption0.svg
+    {
+    default, 3: {T: [0, 1]},
+    2: {T: 0}
+    }
+
+    img=talk/three/three/three-caption1.svg
+    {
+    default, 4: {T: [0, 1]},
+    3: {T: 0}
+    }
+
+    img=talk/three/three/three-caption2.svg
+    {
+    default: {T: [1]},
+    4: {T: 0}
+    }
+
+img=talk/three/three/three-fin.svg
+{
+default: {T: [0,1]},
+5: {T: 0}
+}

@@ -561,7 +561,7 @@ function slidesObjToHTML(slides, callback, jstr = "j-", depth=0, offset=0) {
   }
 }
 
-function render(slides, callback) {
+function render(slides, callback, script_js="", bodyStyles="", t) {
 
   let slidesObj = {
         aspect: 16/9,
@@ -569,7 +569,8 @@ function render(slides, callback) {
         title: "",
         background: "#f0f0f0",
         head: "",
-        body: ""
+        body: "",
+        bodyStyles: bodyStyles
       },
       slidesObjRendered = null
 
@@ -583,7 +584,7 @@ function render(slides, callback) {
       tMap[key] = value.toString().replace(".", "-")
     })
     slidesObj.head += `<style>${slidesHTMLobj.style}</style>`
-    slidesObj.head += `<script>var tMap=${JSON.stringify(tMap)}, aspect=${slidesObj.aspect || 4/3}</script>`
+    slidesObj.head += `<script>var tMap=${JSON.stringify(tMap)}, aspect=${slidesObj.aspect || 4/3}${typeof t == "number" ? (", t0 = " + t):""}</script>`
     slidesObj.body += slidesHTMLobj.body
 
     if (slidesObj.scripts) {
@@ -595,14 +596,19 @@ function render(slides, callback) {
         if (["three.js", "slidesThree.js"].indexOf(script) != -1)
           script = "https://lit3nitride.github.io/kinesthetics/resources/" + script
 
-        slidesObj.body += `\n<script src="${script}"></script>`
+        if (script == "script.js")
+          slidesObj.body += `\n<script>${script_js}</script>`
+        else
+          slidesObj.body += `\n<script src="${script}"></script>`
 
       })
     }
+    if (!slidesObj.backgroundInverted)
+      slidesObj.backgroundInverted = invertColour(slidesObj.background)
     for (let key in slidesObj)
       slidesObjRendered = slidesObjRendered.replace(new RegExp(`\\\${ *${key} *}`, "g"), slidesObj[key])
 
-    callback(null, slidesObjRendered)
+    callback(null, slidesObjRendered, slidesObj)
   }
 
   if (
@@ -636,6 +642,32 @@ function render(slides, callback) {
   }
 }
 
+// By @onury https://github.com/onury
+
+function invertColour(hex) {
+    if (hex.indexOf('#') === 0) {
+        hex = hex.slice(1);
+    }
+    // convert 3-digit hex to 6-digits.
+    if (hex.length === 3) {
+        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    }
+    if (hex.length !== 6) {
+        throw new Error('Invalid HEX color.');
+    }
+    // invert color components
+    var r = (255 - parseInt(hex.slice(0, 2), 16)).toString(16),
+        g = (255 - parseInt(hex.slice(2, 4), 16)).toString(16),
+        b = (255 - parseInt(hex.slice(4, 6), 16)).toString(16);
+    // pad each with zeros and return
+    return '#' + padZero(r) + padZero(g) + padZero(b);
+}
+
+function padZero(str, len) {
+    len = len || 2;
+    var zeros = new Array(len).join('0');
+    return (zeros + str).slice(-len);
+}
 
 const templateFile = `
 <!doctype html>
@@ -659,6 +691,7 @@ const templateFile = `
     }
     body {
       background-color: \${background};
+      \${bodyStyles}
     }
     * {
       margin: 0;
@@ -745,6 +778,15 @@ const templateFile = `
     .sweep.sweep-bottom .sweep-c {
       width: 100%;
       height: 100vh;
+    }
+    .sweep.sweep-top .sweep-c,
+    .sweep.sweep-bottom .sweep-c,
+    .sweep.sweep-left .sweep-c,
+    .sweep.sweep-right .sweep-c {
+      position: absolute;
+      \${bodyStyles}
+      margin-top: 0;
+      margin-left: 0;
     }
 
     #rulerContainer {
@@ -927,12 +969,19 @@ for (var i=0; i<tMap.length; i++) {
   tMapped[i] = tMap[i].replace(/(?!^)-([0-9]*)$/, ".$1")
 }
 
-function change(next) {
+function change(next, to) {
   if (window.disableSlideChange)
     return
   if (body.classList.contains("init")) {
     body.classList.remove("init")
   } else {
+    if (typeof next == "number") {
+      to = next
+      if (t == to)
+        return
+      else
+        next = to > t
+    }
     if (next !== false) {
       if (t < tMap.length) {
         t++
@@ -947,15 +996,17 @@ function change(next) {
       t--
     }
 
+    if (typeof to == "number" && to != t)
+      change(next, to)
+
     let x = ((135.875-24.5)*t/Math.max(tMap.length, 1) + 24.5) - 0.175
-    $timeT.innerHTML = tMapped[t-1] || "default"
-    $timeT.setAttribute("x", x)
-    $timeC.setAttribute("cx", x)
+    if (typeof $timeT != "undefined") {
+      $timeT.innerHTML = tMapped[t-1] || "default"
+      $timeT.setAttribute("x", x)
+      $timeC.setAttribute("cx", x)
+    }
   }
 }
-
-if (typeof window.onSlideReady == "function")
-  window.onSlideReady()
 </script>
 <!-- ===================================
            Debug and tools start
@@ -1036,6 +1087,13 @@ for (var i=0; i<=tMap.length; i++)
 $timeL = document.getElementById("timeL")
 var $timeT = document.getElementById("timeT"),
 $timeC = document.getElementById("timeC")
+
+
+if (typeof window.onSlideReady == "function")
+  window.onSlideReady()
+
+if (typeof window.t0 == "number")
+  change(t0)
 </script>
 <!-- ===================================
              Debug and tools end
