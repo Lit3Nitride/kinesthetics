@@ -1,0 +1,361 @@
+<!doctype html>
+<html class="no-js init" lang="en">
+<head>
+  <title>Kinesthetics Sandbox</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      position: relative;
+      background-color: black;
+    }
+    iframe {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      width: calc(100% - 40vw);
+      height: 100%;
+      margin: 0;
+      border: 0;
+      padding: 0;
+      transition-delay: .7s;
+    }
+    #editor-container {
+      transition: transform .75s cubic-bezier(0.5560641, 0, 0.4324943, 1);
+    }
+    #editor-container-resize,
+    #editor-container-button {
+      display: block;
+      position: absolute;
+      z-index: 99;
+      height: 100%;
+      top: 0;
+      bottom: 0;
+    }
+    #editor-container-resize {
+      left: 0;
+      width: 4px;
+      cursor: col-resize;
+      background-color: grey;
+    }
+    #editor-container-button > span,
+    #editor-container-button {
+      transition: .25s cubic-bezier(0.5560641, 0, 0.4324943, 1);
+    }
+    #editor-container-button {
+      left: -30px;
+      width: 30px;
+      background-color: rgba(0, 0, 0, .25);
+      cursor: pointer;
+    }
+    #editor-container-button:hover {
+      background-color: rgba(0, 0, 0, .5);
+    }
+    #editor-container {
+      transform: translateX(100%);
+    }
+    #editor-container.active {
+      transform: none;
+    }
+    #editor-container:not(.active) #editor-container-button:hover {
+      transition-delay: 0s;
+      opacity: 1;
+    }
+    #editor-container:not(.active) #editor-container-button {
+      transition-delay: .75s;
+      opacity: 0;
+    }
+    #editor-container.active #editor-container-button > span {
+      transform: rotateZ(180deg);
+    }
+    #editor-container-button > span {
+      color: white;
+      display: block;
+      position: absolute;
+      top: 50%;
+      right: 0;
+      left: 0;
+      text-align: center;
+      transform: translateY(-50%);
+      line-height: 0;
+      font-weight: bolder;
+      font-size: 1.25rem;
+    }
+    #editor-container {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 40vw;
+      bottom: 0;
+      background-color: grey;
+    }
+    #editor,
+    #editor-script {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      font-size: 1rem;
+    }
+    #editor-script {
+      top: 100%;
+    }
+    #editor-container.hasScript #editor {
+      bottom: 50.25%;
+    }
+    #editor-container.hasScript #editor-script {
+      top: 50.25%;
+    }
+    #iframe-container, #iframe-hide {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+    }
+    #iframe-hide {
+      display: none;
+    }
+  </style>
+  <script src="https://raw.githubusercontent.com/Lit3Nitride/kinesthetics/master/resources/kinestheticsShim.js"></script>
+  <script src="https://raw.githubusercontent.com/Lit3Nitride/kinesthetics/master/grammar.js"></script>
+  <script src="https://raw.githubusercontent.com/Lit3Nitride/kinesthetics/master/kinesthetics.js"></script>
+</head>
+<body>
+<div id="iframe-container">
+  <iframe seamless>
+  </iframe>
+</div>
+<div id="iframe-hide"></div>
+<div id="editor-container" class="active">
+<div id="editor-container-resize"></div>
+<div id="editor-container-button"><span>&larr;</span></div>
+<div id="editor"></div>
+<div id="editor-script">
+/* ================ Setting up the 3D scene ================ */
+//                                                           //
+//   DO NOT CHANGE THE VARIABLE NAMES IF USING addToState()  //
+//                                                           //
+/* ========================================================= */
+var scene = new THREE.Scene(),
+    renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true,
+      preserveDrawingBuffer: true
+    })
+    camera = new THREE.PerspectiveCamera(35, aspect, 0.1, 20000)
+
+renderer.setPixelRatio(window.devicePixelRatio)
+renderer.setClearColor(0x000000, 0)
+
+function onSlideResize(width, height) {
+  camera.aspect = aspect
+  camera.updateProjectionMatrix()
+  renderer.setSize(width, height)
+}
+
+/* ========================================================== */
+/* ============== Done Setting up the 3D scene ============== */
+/* ========================================================== */
+
+// Add canvas to slide.
+// Uncomment the line below if your slide name is "3D"
+
+// document.getElementById("3D").appendChild(renderer.domElement)
+
+
+/* ===================================== */
+/* ============== Lights! ============== */
+/* ===================================== */
+
+/*
+var lights = []
+lights[0] = new THREE.SpotLight(0xffffff, .15, 0)
+lights[1] = new THREE.SpotLight(0xffffff, .05, 0)
+lights[2] = new THREE.SpotLight(0xffffff, .25, 0)
+
+lights[0].position.set(0, 1000, 0)
+lights[1].position.set(100, 1000, 150)
+lights[2].position.set(-50, -200, -100)
+
+for (var i=0; i&lt;lights.length; i++) {
+  lights[i].castShadow = true
+  scene.add(lights[i])
+}
+*/
+
+/* ===================================== */
+/* ============== Shapes! ============== */
+/* ===================================== */
+
+
+/* ===================================== */
+/* ============== States! ============== */
+/* ===================================== */
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.3.3/ace.js" type="text/javascript" charset="utf-8"></script>
+<script>
+    var triggerResize = false, doResize = false, editorWidth
+    document.getElementById("editor-container-resize").onmouseover = function(e) {triggerResize = true}
+    document.getElementById("editor-container-resize").onmouseout = function(e) {triggerResize = false}
+    document.onmousedown = function(e) {
+      doResize = triggerResize
+      if (doResize)
+        document.getElementById("iframe-hide").style.display = "block"
+    }
+    document.onmouseup = function(e) {
+      if (doResize)
+        document.getElementById("iframe-hide").style.display = "none"
+      doResize = triggerResize = false
+    }
+    document.onmousemove = function(e) {
+      if (doResize) {
+        editorWidth =
+        document.getElementById("editor-container").style.width = Math.min(Math.max((window.outerWidth - e.clientX + 1), 100), window.outerWidth-100) + "px"
+        $iframe.style.width = "calc(100% - " + (editorWidth || "40vw") + ")"
+      }
+    }
+
+    var editor = ace.edit("editor"),
+        editorScript = ace.edit("editor-script"),
+        hasStorage = typeof(Storage) !== "undefined",
+        subPage = window.location.hash.substr(1) || ""
+
+    editor.setTheme("ace/theme/monokai")
+    editorScript.setTheme("ace/theme/monokai")
+    editorScript.session.setMode("ace/mode/javascript")
+
+
+    doChangeOpt = function() {
+      if (!editorScript.session.$worker)
+        setTimeout(doChangeOpt, 250)
+      else
+        editorScript.session.$worker.send("changeOptions", [{asi: true}])
+    }
+    doChangeOpt()
+
+    var $editorContainer = document.getElementById("editor-container"),
+        $iframe = document.getElementsByTagName("iframe")[0],
+        styleKeys = ["margin-top", "margin-left", "width", "height"],
+        kstSource = editor.getValue(),
+        scriptSource = editorScript.getValue(),
+        onSave = {
+          name: 'saveFile',
+          bindKey: {
+            win: 'Ctrl-S',
+            mac: 'Command-S',
+            sender: 'editor|cli'
+          },
+          exec: function() {
+            if (kstSource == editor.getValue() && scriptSource == editorScript.getValue()) {
+              return
+            } else {
+              kstSource = editor.getValue()
+              scriptSource = editorScript.getValue()
+              if (hasStorage) {
+                localStorage.setItem("kstSource_" + subPage, kstSource)
+                localStorage.setItem("scriptSource_" + subPage, scriptSource)
+              }
+            }
+            try {
+              bodyStyles = ""
+              for (var i=0; i<styleKeys.length; i++)
+                bodyStyles += styleKeys[i] + ":" + $iframe.contentDocument.body.style[styleKeys[i]] + ";\n"
+              render({rootDir: "..", bodyStyles: bodyStyles, slides: kstSource, t: $iframe.contentWindow.t}, {isPath: false, scripts: {"script.js": scriptSource}, resourceDir: "https://raw.githubusercontent.com/Lit3Nitride/kinesthetics/master/resources"}, (err, html, slidesObj) => {
+                if (err)
+                  console.log(err)
+                else {
+                  $iframe.setAttribute("srcdoc", html)
+                }
+                if (slidesObj)
+                  if (slidesObj.scripts && slidesObj.scripts.indexOf("script.js") != -1) {
+                    if (!$editorContainer.classList.contains("hasScript")) {
+                      $editorContainer.classList.add("hasScript")
+                      editor.resize()
+                      editorScript.resize()
+                    }
+                  } else {
+                    if ($editorContainer.classList.contains("hasScript")) {
+                      $editorContainer.classList.remove("hasScript")
+                      editor.resize()
+                      editorScript.resize()
+                    }
+                  }
+              })
+            } catch(err) {
+              console.log(err)
+            }
+          }
+        }
+    editor.commands.addCommand(onSave)
+    editorScript.commands.addCommand(onSave)
+
+    document.getElementById("editor-container-button").onclick = function(e) {
+      if ($editorContainer.classList.contains("active")) {
+        $iframe.style.width = "100%"
+        $editorContainer.classList.remove("active")
+        $iframe.contentWindow.focus()
+      } else {
+        $iframe.style.width = "calc(100% - " + (editorWidth || "40vw") + ")"
+        $editorContainer.classList.add("active")
+      }
+    }
+    document.getElementById("iframe-container").onmouseover = function(e) {
+      if (!doResize)
+        $iframe.contentWindow.focus()
+    }
+    document.getElementById("iframe-container").onmouseout = function(e) {
+      $iframe.contentWindow.blur()
+    }
+
+    if (subPage) {
+      var reqKst = new XMLHttpRequest(),
+          reqScript = new XMLHttpRequest(),
+          fileName = "sandbox/" + window.location.hash.substr(1)
+      reqKst.overrideMimeType("text/plain")
+      reqScript.overrideMimeType("text/plain")
+      reqKst.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          if (subPage && localStorage["kstSource_" + subPage] && localStorage["kstSource_" + subPage] != this.responseText)
+            editor.setValue(localStorage["kstSource_" + subPage], -1)
+          else
+            editor.setValue(this.responseText, -1)
+          setTimeout(onSave.exec, 100)
+        }
+      }
+      reqScript.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          if (subPage && localStorage["scriptSource_" + subPage] && localStorage["scriptSource_" + subPage] != this.responseText)
+            editorScript.setValue(localStorage["scriptSource_" + subPage], -1)
+          else
+            editorScript.setValue(this.responseText, -1)
+          setTimeout(onSave.exec, 100)
+        }
+      }
+      reqKst.open("GET", fileName + ".kst", true)
+      reqScript.open("GET", fileName + ".js", true)
+      reqKst.send()
+      reqScript.send()
+    } else {
+      if (hasStorage) {
+        if (localStorage["kstSource_"])
+          editor.setValue(localStorage["kstSource_"], -1)
+        if (localStorage["scriptSource_"])
+          editorScript.setValue(localStorage["scriptSource_"], -1)
+        onSave.exec()
+      }
+      onSave.exec()
+    }
+  </script>
+</body>
+</html>
