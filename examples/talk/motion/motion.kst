@@ -1,60 +1,62 @@
 background: #414141
-backgroundInverted: #BEBEBE
 
 /*
-    1.20: Motion demonstration
-    1.21: Graph things
-    1.22: Integration things
-    1.23: State things
+    0: Motion demonstration
+    100: Graph things
+    200: Integration things
+    300: State things
 */
 
-import=ball/ball.kst offset=1.20
+import=ball/ball.kst
 {
 default: {dt: 1s},
-1.21: {S: 0.5, T: [-0.5]},
-1.22: {S: 0.5, T: [-0.5, -2]}
+10: {S: 0.5, T: [-0.5]},
+200: {S: 0.5, T: [-0.5, -2]}
 }
 
 img=ball/ball/ball-title.svg
 {
-default, 1.21: {T: [0, 1]},
-1.209: {T: 0}
+default, 10: {T: [0, 1]},
+9: {T: 0}
 }
 
-import=graph/graph.kst offset=1.21
+import=graph/graph.kst offset=100
 {
 default: {T: [1], dt: 1s},
-1.21: {T:0},
-1.22: {T: [0, -1]}
-}
-
-import=integration/integration.kst offset=1.22
-{
-default: {T: [0, 1], dt: 1s},
-1.22: {T: 0},
-1.226: {S: 2, T: [0, -0.25]},
-1.23: {S: 2, T: [0, -0.75]}
+10: {T: 0},
+200: {T: [0, -1]}
 }
 
 slide
 {
-default: {dt: 1s},
-1.23: {T: [0, -1]}
+206.1: {T: [0, -0.1]},
+300: {T: [0, -1]}
 }
-    img=state/state/state-eqnText0.svg sweep=top
+    import=integration/integration.kst offset=200
     {
-    default: {sweep: 0.56},
-    1.2261: {sweep: 0.85}
+    default: {T: [0, 1], dt: 1s},
+    200: {T: 0},
+    206: {S: 2, T: [0, -0.25]}
     }
 
-    img=state/state/state-eqnText1.svg sweep=top
+    slide
     {
-    default: {sweep: 0.56},
-    1.2262: {sweep: 0.92}
+    default: {dt: 1s}
     }
+        img=state/state/state-eqnText0.svg sweep=top
+        {
+        default: {sweep: 0.56},
+        206.1: {sweep: 0.85}
+        }
 
-import=state/state.kst offset=1.23
+        img=state/state/state-eqnText1.svg sweep=top
+        {
+        default: {sweep: 0.56},
+        206.2: {sweep: 0.92}
+        }
+
+import=state/state.kst offset=300
 {
 default: {T: [0, -0.25]},
-1.229: {T: 0}
+299: {T: 0}
 }

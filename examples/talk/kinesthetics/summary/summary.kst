@@ -1,0 +1,103 @@
+
+background: #414141
+
+img=summary/summary-fixedTitle.svg sweep=top
+{
+default: {sweep: 1.64, T: [0, 1]},
+1: {sweep: 0.64, T: 0},
+2: {sweep: 0.71},
+2.2: {sweep: 0.76, T: [0, 0.05]},
+3: {sweep: 0.81, T: 0}
+}
+
+slide
+{
+default: {T: [-0.0185]}
+}
+    slide
+    {
+    default: {T: [-1], opacity: 0.2},
+    1.5: {T:0},
+    3.1: {opacity: 0, dt: 0s}
+    }
+        img=summary/summary-fixedS0.svg
+        img=summary/summary-fixedS1.svg
+        img=summary/summary-fixedS2.svg
+        img=summary/summary-fixedS3.svg
+
+    slide
+    {
+    default: {T: [-1]},
+    1.5, 3: {T:0},
+    2.1: {T: [0.12]}
+    }
+        img=summary/summary-fixedS0.svg
+        {
+        3.1: {T: [-0.15]},
+        4: {T: [-0.005, -0.005]}
+        }
+
+        img=summary/summary-fixedS1.svg
+        {
+        3.1: {T: [0 .1]},
+        4: {T: 0}
+        }
+
+        img=summary/summary-fixedS2.svg
+        {
+        3.1: {T: [0.35]},
+        4: {T: [0.005, 0.005]}
+        }
+
+        img=summary/summary-fixedS3.svg
+        {
+        3.1: {T: [0.6]},
+        4: {T: [0.01, 0.01]}
+        }
+
+    img=summary/summary-fixedArrow.svg sweep=right
+    {
+    default, 3: {sweep: 0.71, T: [-0.12]},
+    2.1: {T:0}
+    }
+
+    img=summary/summary-fixedX.svg sweep=top
+    {
+    default, 3: {sweep: 0.5},
+    2.2: {sweep: 0.61}
+    }
+
+slide
+{
+default: {T: [1]},
+5: {T: 0}
+}
+    img=summary/summary-numTitle.svg sweep=top
+    {
+    default: {sweep: 0.64},
+    6: {sweep: 0.77}
+    }
+
+    img=summary/summary-num0.svg
+    {
+    default: {T: 0.11},
+    6.1: {T:0}
+    }
+
+    img=summary/summary-num1.svg
+    {
+    default: {T: 0.2},
+    6.1: {T:0}
+    }
+
+    img=summary/summary-num2.svg
+    {
+    default: {T: -0.165},
+    6.1: {T:0}
+    }
+
+    img=summary/summary-num3.svg
+    {
+    default: {T: -0.065},
+    6.1: {T:0}
+    }

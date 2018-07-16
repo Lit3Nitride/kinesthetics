@@ -1,0 +1,16 @@
+
+background: #414141
+
+img=overview/overview-convert.svg sweep=left
+{
+default: {sweep: 0.343, dt: 0.5s},
+1: {sweep: 0.444},
+2: {sweep: 0.535},
+3: {sweep: 0.661}
+}
+
+img=overview/overview-title.svg
+{
+default: {T: [0, 0.4]},
+4: {T: 0}
+}

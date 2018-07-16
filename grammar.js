@@ -1,4 +1,70 @@
-const fs = require("fs"),
+/**
+
+ * unquote(str)
+   Checks for and removes quotation marks if the string is surrounded by it.
+   `"str"` => `str`
+   `'str'` => `str`
+   `'str"` => `str`
+
+ * classify(classes, id)
+   Parses css-styled class and id
+   (`.class0.class1.class2`, `#id`)
+      => `, class="class0 class1 class2", id="id"`
+
+ * preParse(content, callback)
+ * preParse(content, options, callback)
+   Parses .kst format into a palatable form. Too much things
+   going on to document here.
+
+ ** options
+    valuedTypes, dir
+
+ **** valuedTypes
+      An object that defines the key name for equivalent type.
+      That is, usually,
+        `type="str"` => {type: "type", src: "str"}
+
+      But had we defined
+        valuedTypes = {type: "custom"}
+      we will get
+        `type="str"` => {type: "type", custom: "str"}
+
+ **** dir
+      Directory of .kst file, usually after import.
+      This will be prepended on all the src files.
+      e.g. given dir = "dir0/dir1",
+      `type="src"` => {type: "type", src: "dir0/dir1/src"}
+
+ * objectify(globals, callback)
+ * objectify(globals, level, callback)
+ * objectify(globals, dir, callback)
+ * objectify(globals, options, callback)
+   Turns a pre-parsed format into a javascript object
+
+ ** options
+    rootDir, level
+
+ **** rootDir
+      Directory of kst file, since imports are in relation to this.
+      e.g. given rootDir = "root/dir"
+      `import="kst.kst"` => (import from `root/dir/kst.kst`)
+
+
+ **** level
+      Current level of nested slides:
+      0 is root, and each subsequent layer increases by 1
+
+ * parse(content, callback)
+ * parse(content, options, callback)
+   Parses a kst file into a JSON object.
+
+ **** options
+      Options are that of preParse and objectify
+
+ */
+
+if (typeof module !== "undefined")
+  var fs = require("fs"),
       path = require("path")
 
 // RegExp shortcuts
@@ -8,158 +74,40 @@ const VAL = `(?:"[^"\\r\\n]*"|'[^'\\r\\n]*'|\\S*)`, // "Quoted String", 'Quoted 
       NUM = `\\-?[0-9]*\\.?[0-9]+`, // Numbers: 1, 1.3, .3
       WS2 = /(?: {2,}|[\r\n])/gm,
       ID =  `#${KEY}`,
-      CLASS = `(?:\\.${KEY})*`
+      CLASS = `(?:\\.${KEY})*`,
+      ABS_SCRIPT = /^ *[\"\']? *(?:\/|http)/
 
 // Checks for and removes quotation marks if the string is surrounded by it.
 function unquote(str) {
   str = str.trim()
-  if (str[0].match(/['"]/) != null)
-    str = str.substr(1,str.length-1)
-  if (str[str.length-1].match(/['"]/) != null)
-    str = str.substr(0,str.length-1)
+  if (str.length > 0){
+    if (str[0].match(/['"]/) != null)
+      str = str.substr(1,str.length-1)
+    if (str[str.length-1].match(/['"]/) != null)
+      str = str.substr(0,str.length-1)
+  }
   return str.trim()
 }
 
 // Parses css-styled class and id e.g. ".class0#id.class1"
-function classify(c1, c2, id) {
-  let c = (c1+c2)
+function classify(c, id) {
   c = c ? c.replace(/\./g, " ").trim():false
   id = id ? id.replace("#", "").trim():false
   return (c ? `,"class":"${c}"`:"") + (id ? `,"id":"${id}"`:"")
 }
 
-// Turns a pre-parsed format into a javascript object
-function objectify(globals, content, callback, level=0, dir="") {
-  let object = {},
-      slides = [],
-      j = [],
-      jNum = 0,
-      objectified = 0,
-      currContent,
-      doCallback = () => {
-        if (objectified >= content.length) {
-          // Child bug workaround. I'm not sure why it happens
-          object.slides = slides
-          callback(null, object)
-          return
-        }
-      }
-  globals.forEach(
-    (val) => {
-      try {
-        val = JSON.parse(`{${val}}`)
-      } catch (err) {
-        callback(new Error(`Unable to parse JSON "${val}"`))
-        return
-      }
-      object = {...object, ...val}
-    }
-  )
-
-  content.push("")
-  content.forEach(
-    (row,i) => {
-      // Check if current row is still a child row
-      if (row.substr(0,(level+1)*4) == " ".repeat((level+1)*4)) {
-        j[i] = j[i-1]
-        if (!Array.isArray(slides[j[i]].children))
-          slides[j[i]].children = []
-        slides[j[i]].children.push(row)
-        return
-      } else {
-        // Handle children from the preceding slide
-        if (i > 0 && Array.isArray(slides[j[i-1]].children) && slides[j[i-1]].children.length > 0) {
-          if (!slides[j[i-1]].slides)
-            slides[j[i-1]].slides = []
-          objectify([], slides[j[i-1]].children, (err, childObject) => {
-            if (err) {
-              callback(err)
-              return
-            }
-            slides[j[i-1]].slides = [...slides[j[i-1]].slides, ...childObject.slides]
-            delete childObject.slides
-            object = {...childObject, ...object}
-            objectified += slides[j[i-1]].children.length - 1
-            delete slides[j[i-1]].children
-
-            doCallback()
-          }, level+1)
-        }
-      }
-
-      // If we are at an empty element, it means we're done with the last element
-      if (!row) {
-        objectified++
-        doCallback()
-        return
-      }
-
-      j[i] = i==0 ? 0:j[i-1]+1
-
-      // Handle the actual current slide
-      try {
-        currContent = JSON.parse(row)
-      } catch (err) {
-        callback(new Error(`Unable to parse JSON "${row}"`))
-        return
-      }
-
-      slides[j[i]] = currContent
-
-      // If it is an import file thing then we handle it
-      if (slides[j[i]].type == "import") {
-        fs.readFile(path.join(dir, slides[j[i]].src), "utf8", (err, data) => {
-          if (err && err.code === 'ENOENT') {
-            // If we can't find the file, we just place a flag and move along
-            slides[j[i]].comment = "File not found"
-            objectified++
-            doCallback()
-          } else {
-            if (err) {
-              callback(err)
-              return
-            }
-
-            parse(data, {dir: dir, rootDir: path.dirname(slides[j[i]].src)}, (err, obj) => {
-              if (err) {
-                callback(err)
-                return
-              }
-
-              if (!slides[j[i]].slides)
-                slides[j[i]].slides = []
-
-              slides[j[i]].slides = [...slides[j[i]].slides, ...obj.slides]
-
-              delete obj.slides
-              delete slides[j[i]].src
-              slides[j[i]].type = "slide"
-              object = {...obj, ...object}
-              objectified++
-              doCallback()
-            })
-          }
-        })
-      } else {
-        objectified++
-        doCallback()
-      }
-    }
-  )
-}
-
 // TODO: Math?
 // TODO: Auto-quote bracketed values e.g. rgba(...) -> "rgba(...)"
-function preParse(content, options = {}, callback) {
+function preParse(content, options={}, callback) {
 
   if (typeof options == "function") {
     callback = options
     options = {}
   }
 
-  let {valuedTypes, rootDir} = options
+  let {valuedTypes, dir} = options
   valuedTypes = valuedTypes || []
-  rootDir = rootDir || ""
+  dir = dir || ""
 
   // ======================================================
   //   First, we remove the redundant spaces and comments
@@ -307,18 +255,17 @@ function preParse(content, options = {}, callback) {
     // =    matches it such that it is of the format key=value
     .replace(
       new RegExp(`([\\r\\n]? *)(${KEY}|'${KEY}'|"${KEY}") *(${CLASS})(${ID})?(${CLASS}) *= *(${VAL})( *)`, "g"),
-      (a, prev, key, c1, id, c2, val, next, offset) => {
+      (a, prev, key, c1, id, c2, val, next, offset, all) => {
         key = unquote(key)
         val = unquote(val)
         if (prev.match(/[\r\n]/) != null || offset == 0) { // Means it's a type
           prev += `"type":"${key.toLowerCase()}",`
           key = valuedTypes[key.toLowerCase()] || "src"
-          //key = `"${valuedTypes[key.toLowerCase()] || "src"}":"${unquote(val)}"`
         }
         if (key == "src")
-          val = path.join(rootDir, val)
+          val = path.join(dir, val)
         key = `"${key}":"${val}"`
-        return prev + key + classify(c1, c2, id) + (next ? ",":"")
+        return prev + key + classify(c1+c2, id) + (next ? ",":"")
       }
     )
 
@@ -338,7 +285,7 @@ function preParse(content, options = {}, callback) {
         } else {
           keygroup = keygroup.replace(
             new RegExp(`^([^#\\. ]*)(${CLASS})(${ID})?(${CLASS})([ \\{\\=]?)`),
-            (str, key, c1, id, c2, next) => `"type":"${unquote(key)}"` + classify(c1, c2, id) + (next ? ",":"")
+            (str, key, c1, id, c2, next) => `"type":"${unquote(key)}"` + classify(c1+c2, id) + (next ? ",":"")
           )
           return spaces + keygroup
         }
@@ -357,7 +304,22 @@ function preParse(content, options = {}, callback) {
                     .replace(
                       //(` *(${KEY}) *: *(${VAL}|\\[[^\\]]*\\]) *`)
                       new RegExp(` *(${KEY}) *:(.*)$`),
-                      (str, key, val) => `"${unquote(key)}":` + ((val.indexOf("[") == -1) ? `"${unquote(val)}"`:val)
+                      (str, key, val) => {
+                        if (key == "scripts") {
+                          if (val.indexOf("[") == -1) {
+                            if (script.match(ABS_SCRIPT) == null)
+                              val = path.join(dir, val)
+                          } else {
+                            val = val.replace(/^ *\[/, "").replace(/\] *$/, "").split(",")
+                            val.forEach((script, i) => {
+                              if (script.match(ABS_SCRIPT) == null)
+                                val[i] = `"${path.join(dir, unquote(script))}"`
+                            })
+                            val = "[" + val.join(",") + "]"
+                          }
+                        }
+                        return `"${unquote(key)}":` + ((val.indexOf("[") == -1) ? `"${unquote(val)}"`:val)
+                      }
                     )
                 ]
     } else {
@@ -368,6 +330,141 @@ function preParse(content, options = {}, callback) {
   return {globals, content}
 }
 
+
+// Turns a pre-parsed format into a javascript object
+function objectify(globals, content, options = {}, callback) {
+  if (typeof options == "function") {
+    callback = options
+    options = {}
+  }
+  let level = typeof options == "number" ? options:(options.level || 0),
+      rootDir = typeof options == "string" ? options:(options.rootDir || ""),
+      object = {},
+      slides = [],
+      j = [],
+      jNum = 0,
+      objectified = 0,
+      currContent,
+      doCallback = () => {
+        if (objectified >= content.length) {
+          object.slides = slides
+          callback(null, object)
+          return
+        }
+      }
+  globals.forEach(
+    (val) => {
+      try {
+        val = JSON.parse(`{${val}}`)
+      } catch (err) {
+        callback(new Error(`Unable to parse JSON "${val}"`))
+        return
+      }
+      /*
+      if (val.scripts)
+        if (Array.isArray(val.scripts))
+          val.scripts.forEach((script, i) => {
+            if (script[0] != "/" && script[0].indexOf("http") != 0)
+              val.scripts[i] = path.join(dir, script)
+          })
+          */
+      object = {...object, ...val}
+    }
+  )
+
+  content.push("")
+  content.forEach(
+    (row,i) => {
+      // Check if current row is still a child row
+      if (row.substr(0,(level+1)*4) == " ".repeat((level+1)*4)) {
+        j[i] = j[i-1]
+        if (!Array.isArray(slides[j[i]].children))
+          slides[j[i]].children = []
+        slides[j[i]].children.push(row)
+        return
+      } else {
+        // Handle children from the preceding slide
+        if (i > 0 && Array.isArray(slides[j[i-1]].children) && slides[j[i-1]].children.length > 0) {
+          if (!slides[j[i-1]].slides)
+            slides[j[i-1]].slides = []
+          objectify([], slides[j[i-1]].children, {level: level+1, rootDir: rootDir}, (err, childObject) => {
+            if (err) {
+              callback(err)
+              return
+            }
+            slides[j[i-1]].slides = [...slides[j[i-1]].slides, ...childObject.slides]
+            delete childObject.slides
+            object = {...childObject, ...object}
+            objectified += slides[j[i-1]].children.length - 1
+            delete slides[j[i-1]].children
+
+            doCallback()
+          })
+        }
+      }
+
+      // If we are at an empty element, it means we're done with the last element
+      if (!row) {
+        objectified++
+        doCallback()
+        return
+      }
+
+      j[i] = i==0 ? 0:j[i-1]+1
+
+      // Handle the actual current slide
+      try {
+        currContent = JSON.parse(row)
+      } catch (err) {
+        callback(new Error(`Unable to parse JSON "${row}"`))
+        return
+      }
+
+      slides[j[i]] = currContent
+
+      // If it is an import file thing then we handle it
+      if (slides[j[i]].type == "import") {
+        fs.readFile(path.join(rootDir, slides[j[i]].src), "utf8", (err, data) => {
+          if (err && err.code === 'ENOENT') {
+            // If we can't find the file, we just place a flag and move along
+            slides[j[i]].comment = "File not found - " + path.join(rootDir, slides[j[i]].src)
+            objectified++
+            doCallback()
+          } else {
+            if (err) {
+              callback(err)
+              return
+            }
+
+            parse(data, {rootDir: rootDir, dir: path.dirname(slides[j[i]].src)}, (err, obj) => {
+              if (err) {
+                callback(err)
+                return
+              }
+
+              if (!slides[j[i]].slides)
+                slides[j[i]].slides = []
+
+              slides[j[i]].slides = [...slides[j[i]].slides, ...obj.slides]
+
+              delete obj.slides
+              delete slides[j[i]].src
+              slides[j[i]].type = "slide"
+              object = {...obj, ...object}
+              objectified++
+              doCallback()
+            })
+          }
+        })
+      } else {
+        objectified++
+        doCallback()
+      }
+    }
+  )
+}
+
+
 function parse(content, options={}, callback) {
 
   if (typeof options == "function") {
@@ -375,13 +472,12 @@ function parse(content, options={}, callback) {
     options = {}
   }
 
-  let dir = options.dir || ""
-  delete options.dir
+  let rootDir = options.rootDir || ""
+  delete options.rootDir
 
   let {globals, content: parsedContent} = preParse(content, options, callback)
-  objectify(globals, parsedContent, (err, obj) => callback(err, obj), 0, dir)
+  objectify(globals, parsedContent, rootDir, (err, obj) => callback(err, obj))
 }
 
-module.exports = {
-  parse
-}
+if (typeof module !== "undefined")
+  module.exports = {parse}

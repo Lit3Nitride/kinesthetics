@@ -1,6 +1,6 @@
 {
   "name": "kinesthetics",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A software that creates kinematic presentation slides",
   "main": "kinesthetics.js",
   "author": "Zaw Lin Htoo",

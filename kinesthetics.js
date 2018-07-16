@@ -1,7 +1,12 @@
-const fs = require("fs"),
-      path = require("path"),
-      {parse} = require("./grammar"),
-      handledKeys = [
+if (typeof module !== "undefined")
+  var {parse} = require("./grammar"),
+      fs = require("fs"),
+      path = require("path")
+
+var customStyles = require("./styles.json", "customStyles"),
+    mimes = require("./server/mime.json", "mimes")
+
+const handledKeys = [
         "class",
         "slides",
         "type",
@@ -38,7 +43,6 @@ const fs = require("fs"),
           }
         }
       },
-      customStyles = require("./styles.json"),
       handledSweeps = {
         "left": "width",
         "right": "width",
@@ -46,7 +50,8 @@ const fs = require("fs"),
         "bottom": "height"
       }
 
-if (require.main === module) {
+
+if (typeof module !== "undefined" && require.main === module) {
   const args = process.argv.splice(2),
       READLINE = require("readline"),
       readlineOpt = {
@@ -69,6 +74,8 @@ if (require.main === module) {
               if (newName) {
                 fileName = newName
                 saveFile(html)
+              } else {
+                console.log("Operation cancelled.")
               }
               readline.close()
             }
@@ -76,9 +83,9 @@ if (require.main === module) {
         }
       })
     }
-    
+
     if (kstFileDat.ext == ".kst")
-      render(kstFile, (err, html) => {
+      render(kstFile, {renderSingle: true}, (err, html) => {
         if (err)
           throw err
         else
@@ -97,12 +104,18 @@ if (require.main === module) {
 */
 
 function add(a, b, returnStr = false) {
+  let numP = (num) => num.toString()
+                                 .replace(/^-/,"")
+                                 .replace(/\./, "")
+                                 .replace(/e-[0-9]*$/i, "").length
+
   a = Number(a)
   b = Number(b)
 
-  let aP = a.toString().replace(/./, "").replace(/e-[0-9]*$/i, "").length,
-      bP = b.toString().replace(/./, "").replace(/e-[0-9]*$/i, "").length,
-      c = (a+b).toPrecision(Math.max(aP, bP, 1))
+  let aP = numP(a),
+      bP = numP(b),
+      abP = numP(a+b),
+      c = (a+b).toPrecision(Math.max(aP, bP, abP, 1))
 
   if (c.match(/^0\./) != null)
     c = c.replace(/0*$/, "")
@@ -118,7 +131,23 @@ function add(a, b, returnStr = false) {
   return c
 }
 
-function slidesObjToHTML(slides, callback, jstr = "j-", depth=0, offset=0) {
+function invertColour(colour) {
+  colour = colour.replace(/^#/, "")
+
+  if (colour.length == 3)
+    colour = colour.split("").map(x => x+x).join("")
+  else if (colour.length != 6)
+    throw new Error(`#${colour} is an invalid colour`)
+
+  colour = (0xFFFFFF-parseInt(colour, 16)).toString(16)
+  return `#${"0".repeat(6-colour.length)}${colour}`
+}
+
+function slidesObjToHTML(slides, options={jstr: "j-"}, callback) {
+  if (typeof options == "function") {
+    callback = options
+    options = {jstr: "j-"}
+  }
   var slidesHTMLobj = {
         body: [],
         style: "",
@@ -126,7 +155,13 @@ function slidesObjToHTML(slides, callback, jstr = "j-", depth=0, offset=0) {
       },
       slideType = {},
       finishedSlides = 0,
-      padding = " ".repeat(2*depth)
+      padding = " ".repeat(2*depth),
+      jstr = typeof options == "string" ? options:(options.jstr || "j-"),
+      depth = options.depth || 0,
+      offset = options.offset || 0,
+      dir = options.dir || "",
+      renderSingle = options.renderSingle || false
+
   for (let j=0; j<slides.length; j++) {
 
     if (!slides[j].type || slides[j].type == "slide")
@@ -148,8 +183,28 @@ function slidesObjToHTML(slides, callback, jstr = "j-", depth=0, offset=0) {
     slidesHTMLobj.body[j] += `<${slides[j].type} class="${slides[j].class.trim()}"`
 
     for (let key in slides[j])
-      if (handledKeys.indexOf(key) == -1)
-        slidesHTMLobj.body[j] += ` ${key}="${slides[j][key]}"`
+      if (handledKeys.indexOf(key) == -1) {
+        let val = slides[j][key]
+
+        if (renderSingle && key == "src") {
+          let mime, ext = path.extname(val).substr(1)
+          for (let m in mimes)
+            if (mimes[m].indexOf(ext) != -1)
+              mime = m
+          try {
+            val = `data:${mime};base64,` + Buffer.from(fs.readFileSync(path.join(dir, val))).toString('base64')
+          } catch (err) {
+            if (err.code == "ENOENT") {
+              console.log(`Source '${val}' for <${key}> does not exist.`)
+            } else {
+              callback(err)
+              return
+            }
+          }
+        }
+
+        slidesHTMLobj.body[j] += ` ${key}="${val}"`
+      }
 
     slidesHTMLobj.body[j] += ">\n"
 
@@ -195,7 +250,6 @@ function slidesObjToHTML(slides, callback, jstr = "j-", depth=0, offset=0) {
 
           sweepStyle += `${slideType[j]}: ${sweepPercent};`
         } else {
-
           value = slides[j].state[t0Str][key]
           value = (key == "O" && typeof value == "number") ? `${value*100}%`:value
           if (customStyles.value && customStyles.value[key] && customStyles.value[key][value])
@@ -214,28 +268,36 @@ function slidesObjToHTML(slides, callback, jstr = "j-", depth=0, offset=0) {
       if (slideType[j])
         tmpStyle[t0] += sweepStyle + "}\n"
     }
-    Object.keys(tmpStyle).sort().forEach((key) => {
-      slidesHTMLobj.style += tmpStyle[key]
-    })
+    Object.keys(tmpStyle).sort((a,b) => a-b).forEach((key) => slidesHTMLobj.style += tmpStyle[key])
 
     if (typeof slides[j].slides == "object") {
-      slidesObjToHTML(slides[j].slides, (err, childSlidesHTMLobj) => {
-        if (err) {
-          callback(err)
-          return
+      slidesObjToHTML(
+        slides[j].slides,
+        {
+          jstr: jstr+j+"-",
+          depth: depth+1,
+          offset: add(offset, slides[j].offset || 0),
+          dir: dir,
+          renderSingle: renderSingle
+        },
+        (err, childSlidesHTMLobj) => {
+          if (err) {
+            callback(err)
+            return
+          }
+          // Deconstructs and merges the two sets, or, "a union b"
+          slidesHTMLobj.t = new Set([...slidesHTMLobj.t, ...childSlidesHTMLobj.t])
+          slidesHTMLobj.style += childSlidesHTMLobj.style
+          slidesHTMLobj.body[j] += childSlidesHTMLobj.body
+          slidesHTMLobj.body[j] += "\n" + padding + `</${slides[j].type }>`
+          if (typeof slideType[j] != "undefined")
+            slidesHTMLobj.body[j] += "</div></div>"
+          if (++finishedSlides == slides.length) {
+            slidesHTMLobj.body = padding + slidesHTMLobj.body.join("\n" + padding)
+            callback(null, slidesHTMLobj)
+          }
         }
-        // Deconstructs and merges the two sets, or, "a union b"
-        slidesHTMLobj.t = new Set([...slidesHTMLobj.t, ...childSlidesHTMLobj.t])
-        slidesHTMLobj.style += childSlidesHTMLobj.style
-        slidesHTMLobj.body[j] += childSlidesHTMLobj.body
-        slidesHTMLobj.body[j] += "\n" + padding + `</${slides[j].type }>`
-        if (typeof slideType[j] != "undefined")
-          slidesHTMLobj.body[j] += "</div></div>"
-        if (++finishedSlides == slides.length) {
-          slidesHTMLobj.body = padding + slidesHTMLobj.body.join("\n" + padding)
-          callback(null, slidesHTMLobj)
-        }
-      }, jstr+j+"-", depth+1, add(offset, slides[j].offset || 0))
+      )
     } else {
       slidesHTMLobj.body[j] += padding + `</${slides[j].type }>`
       if (typeof slideType[j] != "undefined")
@@ -248,18 +310,26 @@ function slidesObjToHTML(slides, callback, jstr = "j-", depth=0, offset=0) {
   }
 }
 
-function render(slides, callback) {
+function render(slides, options = {}, callback) {
+  if (typeof options == "function") {
+    callback = options
+    options = {}
+  }
+  renderSingle = options.renderSingle || false
+  options.resourceDir = options.resourceDir || "/resources"
 
   let slidesObj = {
         aspect: 16/9,
         slides: "",
         title: "",
-        templateFile: "resources/template.html",
+        templateFile: path.join(__dirname, options.resourceDir, "template.html"),
         background: "#f0f0f0",
         head: "",
-        body: ""
+        body: "",
+        bodyStyles: ""
       },
-      slidesObjRendered = null
+      slidesObjRendered = null,
+      slidesPath
 
   let slidesInjectHTML = (err, slidesHTMLobj) => {
     if (err) {
@@ -271,26 +341,73 @@ function render(slides, callback) {
       tMap[key] = value.toString().replace(".", "-")
     })
     slidesObj.head += `<style>${slidesHTMLobj.style}</style>`
-    slidesObj.head += `<script>var tMap=${JSON.stringify(tMap)}, aspect=${slidesObj.aspect || 4/3}</script>`
+    slidesObj.head += `<script>var tMap=${JSON.stringify(tMap)}, aspect=${slidesObj.aspect}${
+                        typeof slidesObj.t == "number" ? (", t0 = " + slidesObj.t):""
+                      }</script>`
     slidesObj.body += slidesHTMLobj.body
 
     if (slidesObj.scripts) {
       slidesObj.scripts = Array.isArray(slidesObj.scripts) ? slidesObj.scripts:[slidesObj.scripts]
-      if (slidesObj.scripts.indexOf("three.js") != -1)
-        slidesObj.scripts.splice(slidesObj.scripts.indexOf("three.js")+1, 0, "slidesThree.js")
-      slidesObj.scripts.forEach((script) => {
+      for (let i=0; i<slidesObj.scripts.length; i++) {
+        let script = slidesObj.scripts[i]
+        if (typeof options.scripts == "object" && options.scripts[script]) {
+          slidesObj.body += `\n<script>${options.scripts[script]}</script>`
+        } else {
+          if (script.match(/^\/[^\/]/) != null)
+            script = path.join((renderSingle ? __dirname:"") + options.resourceDir, script)
+          else if (renderSingle)
+            script = path.join(slidesPath, script)
 
-        if (["three.js", "slidesThree.js"].indexOf(script) != -1)
-          script = path.join("/resources", script)
+          if (renderSingle) {
+            try {
+              slidesObj.body += `\n<script>${fs.readFileSync(script)}</script>`
+            } catch (err) {
+              if (err.code == "ENOENT") {
+                console.log(`Script '${script}' does not exist.`)
+              } else {
+                callback(err)
+                return
+              }
+            }
+          } else {
+            slidesObj.body += `\n<script src="${script}"></script>`
+          }
 
-        slidesObj.body += `\n<script src="${script}"></script>`
+          if (script.match(/three(?:\.min)?\.js$/) != null)
+            slidesObj.scripts.splice(i+1, 0, "/slidesThree.js")
+        }
+      }
+    }
+    if (slidesObj.styles) {
+      slidesObj.styles = Array.isArray(slidesObj.styles) ? slidesObj.styles:[slidesObj.styles]
+      slidesObj.styles.forEach((style) => {
 
+        if (style.match(/^\/[^\/]/) != null)
+          style = path.join((renderSingle ? __dirname:"") + options.resourceDir, style)
+        else if (renderSingle)
+          style = path.join(slidesPath, style)
+
+        if (renderSingle)
+          try {
+            slidesObj.head += `\n<style>${fs.readFileSync(style)}</style>`
+          } catch (err) {
+            if (err.code == "ENOENT") {
+              console.log(`Stylesheet '${style}' does not exist.`)
+            } else {
+              callback(err)
+              return
+            }
+          }
+        else
+          slidesObj.head += `\n<link rel="stylesheet" type="text/css" href="${style}"></link>`
       })
     }
+    if (!slidesObj.backgroundInverted)
+      slidesObj.backgroundInverted = invertColour(slidesObj.background)
     for (let key in slidesObj)
       slidesObjRendered = slidesObjRendered.replace(new RegExp(`\\\${ *${key} *}`, "g"), slidesObj[key])
 
-    callback(null, slidesObjRendered)
+    callback(null, slidesObjRendered, slidesObj)
   }
 
   if (
@@ -304,11 +421,13 @@ function render(slides, callback) {
   } else if (typeof slides == "object") {
     for (let key in slides)
       slidesObj[key] = slides[key]
+    if (slides.slides)
+      delete slides.slides
   }
   fs.readFile(slidesObj.templateFile, "utf8", (err, data) => {
     if (err) {
-      if (err.code === 'ENOENT') {
-        callback(new Error("Template file '" + slidesObj.templateFile + "' does not exist"))
+      if (err.code == "ENOENT") {
+        callback(new Error(`Template file '${slidesObj.templateFile}' does not exist`))
       } else {
         callback(err)
       }
@@ -317,31 +436,38 @@ function render(slides, callback) {
     slidesObjRendered = data
 
     if (typeof slidesObj.slides == "string") {
-      fs.readFile(slidesObj.slides, "utf8", (err, data) => {
-        if (err) {
-          if (err.code === 'ENOENT') {
-            callback(new Error("Slides file '" + slidesObj.slides + "' does not exist"))
-          } else {
-            callback(err)
-          }
-          return
-        }
+      let doParse = (data, parseOptions={}) => parse(data, parseOptions, (err, obj) => {
+                      if (err) {
+                        callback(err)
+                        return
+                      }
+                      for (let key in obj)
+                        if (typeof slides != "object" || Object.keys(slides).indexOf(key) == -1)
+                          slidesObj[key] = obj[key]
+                      slidesObjToHTML(slidesObj.slides, {dir: slidesPath, renderSingle: renderSingle}, slidesInjectHTML)
+                    })
 
-        parse(data, {dir: path.dirname(slidesObj.slides)}, (err, obj) => {
-            if (err) {
+      if (options.isPath !== false)
+        fs.readFile(slidesObj.slides, "utf8", (err, data) => {
+          if (err) {
+            if (err.code == "ENOENT") {
+              callback(new Error(`Slides file '${slidesObj.slides}' does not exist`))
+            } else {
               callback(err)
-              return
             }
-            for (let key in obj)
-              if (typeof slides != "object" || Object.keys(slides).indexOf(key) == -1)
-                slidesObj[key] = obj[key]
-            slidesObjToHTML(slidesObj.slides, slidesInjectHTML)
+            return
           }
-        )
-      })
+
+          slidesPath = path.dirname(slidesObj.slides)
+          doParse(data, {rootDir: slidesPath})
+        })
+      else
+        doParse(slidesObj.slides)
     } else {
-      slidesObjToHTML(slidesObj.slides, slidesInjectHTML)
+      slidesObjToHTML(slidesObj.slides, {renderSingle: renderSingle}, slidesInjectHTML)
     }
   })
 }
-module.exports = {render}
+
+if (typeof module !== "undefined")
+  module.exports = {render}

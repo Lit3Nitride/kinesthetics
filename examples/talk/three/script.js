@@ -161,28 +161,28 @@ addToState("default", boxMaterial0, "opacity", 0)
 addToState("default", box1.position, "y", 10)
 addToState("default", boxMaterial1, "opacity", 0)
 
-addToState(3.1, camera.position, "z", 15)
+addToState(3001, camera.position, "z", 15)
 
-addToState(3.2, boxMaterial0, "opacity", 1)
-addToState(3.2, boxMaterial1, "opacity", 1)
+addToState(3002, boxMaterial0, "opacity", 1)
+addToState(3002, boxMaterial1, "opacity", 1)
 
-addToState(3.2, dipoleArrow0.scale, "y", .75)
-addToState(3.2, dipoleArrow1.scale, "y", .75)
+addToState(3002, dipoleArrow0.scale, "y", .75)
+addToState(3002, dipoleArrow1.scale, "y", .75)
 
-addToState(3.3, dipole0.rotation, "z", Math.PI/2)
-addToState(3.3, dipole1.rotation, "z", -Math.PI/2)
-addToState(3.3, dipoleArrow0.scale, "y", dipoleLength)
-addToState(3.3, dipoleArrow1.scale, "y", dipoleLength)
+addToState(3003, dipole0.rotation, "z", Math.PI/2)
+addToState(3003, dipole1.rotation, "z", -Math.PI/2)
+addToState(3003, dipoleArrow0.scale, "y", dipoleLength)
+addToState(3003, dipoleArrow1.scale, "y", dipoleLength)
 
 
-addToState(3.4, water.rotation, "x", function(t) {
+addToState(3004, water.rotation, "x", function(t) {
   return (180-120*Math.cos(t/1000))/180*Math.PI
 }, 2000)
-addToState(3.4, water.rotation, "y", function(t) {
+addToState(3004, water.rotation, "y", function(t) {
   return (45*Math.cos(t/1000))/180*Math.PI
 }, 2000)
 
-addToState(3.4, box0.position, "y", -5, 1000)
-addToState(3.4, box1.position, "y", 5, 1000)
-addToState(3.4, camera.position, "z", 25)
-addToState(3.4, camera.position, "x", 4)
+addToState(3004, box0.position, "y", -5, 1000)
+addToState(3004, box1.position, "y", 5, 1000)
+addToState(3004, camera.position, "z", 25)
+addToState(3004, camera.position, "x", 4)

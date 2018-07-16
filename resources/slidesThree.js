@@ -1,4 +1,4 @@
-
+// Function to convert number into string
 function toString(a) {
   if (typeof a != "string" && a != null) {
     a = a.toString()
@@ -11,28 +11,61 @@ function toString(a) {
   return a
 }
 
-function ease(t, dt, t0, arrived) {
+function ease(t, dt, t0) {
   t = (t-t0)/dt
-  var e = t < 0 ? 0:
-          t > 1 ? 1:
-          t < .5 ? 2*t*t:4*t-2*t*t-1
-  return arrived !== false ? e:1-e
+  return t < 0 ? 0:
+         t > 1 ? 1:
+         t < .5 ? 2*t*t:4*t-2*t*t-1
 }
-
 
 var states = {default: []},
     slidesReady = false
 
 window.disableSlideChange = true
 
+var controls, prev = {position: {}, rotation: {}}
+function triggerCamera() {
+  if (!enableCamera)
+    for (var i=0; i<2; i++) {
+      for (var j=0; j<3; j++) {
+        prev[["position", "rotation"][i]][["x", "y", "z"][j]] = camera[["position", "rotation"][i]][["x", "y", "z"][j]]
+      }
+    }
+  else
+    for (var i=0; i<2; i++) {
+      for (var j=0; j<3; j++) {
+        camera[["position", "rotation"][i]][["x", "y", "z"][j]] = prev[["position", "rotation"][i]][["x", "y", "z"][j]]
+      }
+    }
+  window.enableCamera =
+  controls.enabled = !window.enableCamera
+}
+
 function onSlideReady() {
   if (typeof scene == "undefined")
     return setTimeout(onSlideReady, 500)
-  scene.visible = false
-  revisibleScene = setTimeout(function() {
-    scene.visible = true
-    window.disableSlideChange = false
-  }, 2500)
+  if (typeof THREE.OrbitControls != "undefined") {
+    window.enableCamera = false
+    controls = new THREE.OrbitControls(camera)
+    controls.enabled = false
+    controls.rotateSpeed = 5.0
+    controls.zoomSpeed = 3.2
+    controls.panSpeed = 0.8
+    controls.enableZoom = true
+    //controls.enableKeys = false
+    controls.update()
+  }
+  setTimeout(function() {
+    if (window.preload3D !== false) {
+      scene.visible = false
+      revisibleScene = setTimeout(function() {
+        scene.visible = true
+        window.disableSlideChange = false
+      }, 2500)
+    } else {
+      window.disableSlideChange = false
+    }
+  }, 20)
   for (var i=0; i<tMapped.length; i++)
     states[tMapped[i]] = []
   slidesReady = true
@@ -145,6 +178,20 @@ function addToState(slide, obj, key, value, dt) {
       addToState(slide, obj, key, value, dt)
     }, 500)
 
+  if (Array.isArray(slide)) {
+    for (var i=0; i<slide.length; i++)
+      addToState(slide[i], obj, key, value, dt)
+    return
+  } else if (Array.isArray(obj)) {
+    for (var i=0; i<obj.length; i++)
+      addToState(slide, obj[i], key, value, dt)
+    return
+  }
+
+
+  if (slide != "default" && typeof window.scriptOffset != "undefined")
+    slide += window.scriptOffset
+
   if (tMapped.indexOf(toString(slide)) == -1 && tMapped.indexOf(slide) == -1 && slide != "default")
     return
 
@@ -162,11 +209,19 @@ function addToState(slide, obj, key, value, dt) {
 
   if (typeof key == "number") {
     for (var i=0; i<Object.keys(obj).length; i++) {
-      states[slide].push({obj: obj, key: Object.keys(obj)[i], value: key, dt: dt})
+      if (Object.keys(obj)[i].indexOf("$") == -1)
+        states[slide].push({obj: obj, key: Object.keys(obj)[i], value: key, dt: value})
     }
-  } else if (Array.isArray(key)) {
-    for (var i=0; i<key.length; i++) {
-      states[slide].push({obj: obj, key: ["x", "y", "z"][i], value: key[i], dt: dt})
+  } else if (typeof key == "object") {
+    if (Array.isArray(key)) {
+      for (var i=0; i<Math.min(key.length, Object.keys(obj).length); i++) {
+        states[slide].push({obj: obj, key: Object.keys(obj)[i], value: key[i], dt: value})
+      }
+    } else {
+      keys = Object.Keys(key)
+      for (var i=0; i<keys.length; i++) {
+        states[slide].push({obj: obj, key: keys[i], value: key[keys[i]], dt: value})
+      }
     }
   } else {
     states[slide].push({obj: obj, key: key, value: value, dt: dt})
@@ -177,7 +232,8 @@ function addToState(slide, obj, key, value, dt) {
   if (priorObjs[tMapped.indexOf(slide)+1] === true)
     priorObjs[tMapped.indexOf(slide)+1] = false
 
-  reloadStatesTimeout = setTimeout(reloadStates, 250)
+  if (window.preload3D !== false)
+    reloadStatesTimeout = setTimeout(reloadStates, 250)
 }
 
 var revisibleScene
@@ -215,24 +271,27 @@ function animate(t) {
     if (anim.t0 == null)
       anim.t0 = t
 
-    if (states[anim.to])
+
+    if (states[anim.to] && !window.enableCamera)
       for (var i=0; i<states[anim.to].length; i++) {
-        var stateObj = states[anim.to][i],
-            valFrom = stateObj.from[anim.arrived],
+        var stateObj = states[anim.to][i]
+        if (!stateObj.from)
+          continue
+        var valFrom = stateObj.from[anim.arrived],
             valTo = stateObj.value
 
         if (typeof valTo == "function" && (typeof stateObj.obj["$" + stateObj.key] == "undefined" || (stateObj.obj["$" + stateObj.key].toString() != valTo.toString()))) {
           stateObj.obj["$" + stateObj.key] = valTo
         }
 
-        valFrom = typeof valFrom == "function" ? valFrom(t):valFrom
-        valTo = typeof valTo == "function" ? valTo(t):valTo
+        valFrom = typeof valFrom == "function" ? valFrom(t, anim.t0):valFrom
+        valTo = typeof valTo == "function" ? valTo(t, anim.t0):valTo
 
 
         if (valFrom === false)
           stateObj.obj[stateObj.key] = valTo
         else
-          stateObj.obj[stateObj.key] = valTo*ease(t, stateObj.dt, anim.t0) + valFrom*ease(t, stateObj.dt, anim.t0, false)
+          stateObj.obj[stateObj.key] = (valTo - valFrom)*ease(t, stateObj.dt, anim.t0) + valFrom
 
         if ((anim.t0 + stateObj.dt) < t)
           stateObj.from[anim.arrived] = false
