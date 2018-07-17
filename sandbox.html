@@ -272,7 +272,7 @@ for (var i=0; i&lt;lights.length; i++) {
               bodyStyles = ""
               for (var i=0; i<styleKeys.length; i++)
                 bodyStyles += styleKeys[i] + ":" + $iframe.contentDocument.body.style[styleKeys[i]] + ";\n"
-              render({rootDir: "..", bodyStyles: bodyStyles, slides: kstSource, t: $iframe.contentWindow.t}, {isPath: false, scripts: {"script.js": scriptSource}, resourceDir: "https://lit3nitride.github.io/kinesthetics/resources"}, (err, html, slidesObj) => {
+              render({rootDir: "..", bodyStyles: bodyStyles, slides: kstSource, t: $iframe.contentWindow.t}, {isPath: false, scripts: {"script.js": scriptSource}, resourceDir: "resources"}, (err, html, slidesObj) => {
                 if (err)
                   console.log(err)
                 else {
