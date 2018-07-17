@@ -1,0 +1,13 @@
+{
+  "key": {
+    "ease": "transition-timing-function",
+    "dt": "transition-duration",
+    "t0": "transition-delay",
+    "O": "transform-origin"
+  },
+  "value": {
+    "ease": {
+      "cubic": "cubic-bezier(0.5560641, 0, 0.4324943, 1)"
+    }
+  }
+}
