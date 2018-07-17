@@ -254,8 +254,13 @@ function slidesObjToHTML(slides, options={jstr: "j-"}, callback) {
           value = (key == "O" && typeof value == "number") ? `${value*100}%`:value
           if (customStyles.value && customStyles.value[key] && customStyles.value[key][value])
             value = customStyles.value[key][value]
-          if (customStyles.key && customStyles.key[key])
+
+          if (customStyles.key && customStyles.key[key]) {
             key = customStyles.key[key]
+            if (Array.isArray(value))
+              value = value.join(" ")
+          }
+
           if (slideType[j])
             sweepStyle += `  ${key}: ${value};\n`
           else
