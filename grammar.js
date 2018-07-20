@@ -243,7 +243,7 @@ function preParse(content, options={}, callback) {
             }
 
             // Recombine and return the values
-            for (key in ts)
+            for (let key in ts)
               tStr += `${key}:{${ts[key]}},`
 
             return `${start} "state":{${tStr.substr(0, tStr.length-1)}}`

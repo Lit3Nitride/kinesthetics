@@ -126,9 +126,9 @@
       display: none;
     }
   </style>
-  <script src="https://lit3nitride.github.io/kinesthetics/resources/kinestheticsShim.js"></script>
-  <script src="https://lit3nitride.github.io/kinesthetics/grammar.js"></script>
-  <script src="https://lit3nitride.github.io/kinesthetics/kinesthetics.js"></script>
+  <script src="resources/kinestheticsShim.min.js"></script>
+  <script src="grammar.min.js"></script>
+  <script src="kinesthetics.min.js"></script>
 </head>
 <body>
 <div id="iframe-container">
@@ -231,10 +231,14 @@ for (var i=0; i&lt;lights.length; i++) {
         hasStorage = typeof(Storage) !== "undefined",
         subPage = window.location.hash.substr(1) || ""
 
+
     editor.setTheme("ace/theme/monokai")
+    editor.session.setUseSoftTabs(true)
     editorScript.setTheme("ace/theme/monokai")
     editorScript.session.setMode("ace/mode/javascript")
-
+    editorScript.session.setUseWrapMode(true)
+    ace.config.set('modePath', "resources")
+    editor.session.setMode("ace/mode/kinesthetics")
 
     doChangeOpt = function() {
       if (!editorScript.session.$worker)
@@ -278,7 +282,7 @@ for (var i=0; i&lt;lights.length; i++) {
                 else {
                   $iframe.setAttribute("srcdoc", html)
                 }
-                if (slidesObj)
+                if (slidesObj) {
                   if (slidesObj.scripts && slidesObj.scripts.indexOf("script.js") != -1) {
                     if (!$editorContainer.classList.contains("hasScript")) {
                       $editorContainer.classList.add("hasScript")
@@ -292,6 +296,9 @@ for (var i=0; i&lt;lights.length; i++) {
                       editorScript.resize()
                     }
                   }
+                  if (slidesObj.title)
+                    document.title = "Kinesthetics Sandbox - " + slidesObj.title
+                }
               })
             } catch(err) {
               console.log(err)
@@ -319,7 +326,7 @@ for (var i=0; i&lt;lights.length; i++) {
       $iframe.contentWindow.blur()
     }
 
-    if (subPage) {
+    if (subPage && (!hasStorage || !localStorage["kstSource_" + subPage])) {
       var reqKst = new XMLHttpRequest(),
           reqScript = new XMLHttpRequest(),
           fileName = "sandbox/" + window.location.hash.substr(1)
@@ -349,10 +356,10 @@ for (var i=0; i&lt;lights.length; i++) {
       reqScript.send()
     } else {
       if (hasStorage) {
-        if (localStorage["kstSource_"])
-          editor.setValue(localStorage["kstSource_"], -1)
-        if (localStorage["scriptSource_"])
-          editorScript.setValue(localStorage["scriptSource_"], -1)
+        if (localStorage["kstSource_" + subPage])
+          editor.setValue(localStorage["kstSource_" + subPage], -1)
+        if (localStorage["scriptSource_" + subPage])
+          editorScript.setValue(localStorage["scriptSource_" + subPage], -1)
         onSave.exec()
       }
       onSave.exec()

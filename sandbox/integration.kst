@@ -1,0 +1,70 @@
+/*
+  =================================
+          t: Occurence
+  =================================
+    default: Centered title
+          0: Graph comes into frame
+          1: Integration animation
+*/
+
+
+// The title of the presentation.
+// It appears in the title bar of the browser
+title: Integration Graphs
+
+// Background colour of the presentation
+background: #3F3F3F
+
+
+// Translate the title down so
+// it is initially centred,
+// then bring it up to the original
+// position at the top after
+img=slides/example-title.svg
+{
+default: {T: [0, 0.361]},
+0: {T: 0}
+}
+
+// Have all the slides translate top
+// 100%, so it is out of screen,
+// then translate 0 so that it
+// appears in the centre of the screen
+slide
+{
+default: {T: [0, 1]},
+0: {T: 0}
+}
+    // This slide is inside the slide above,
+    // and we translate it 20% upwards so that
+    // it doesn't cover the graph below
+    slide
+    {
+    default: {T: [0, -0.04]}
+    }
+        // The area under the graph.
+        // Sweep from the left to the right
+        // to make the area appear.
+        // dt: 2s makes it take 2 seconds
+        img=slides/integration-shape1.svg sweep=left
+        {
+        default: {sweep: 0.351, dt: 2s},
+        1: {sweep: 0.685}
+        }
+        img=slides/integration-line1.svg
+        img=slides/integration-plot1.svg
+
+    // Same for the position graph, but we apply
+    // the exact same sweep on the line instead
+    // so that it sweeps with the same motion
+    // as the area under the velocity graph
+    slide
+    {
+    default: {T: [0, 0.325]}
+    }
+        img=slides/integration-line0.svg sweep=left
+        {
+        default: {sweep: 0.351, dt: 2s},
+        1: {sweep: 0.685}
+        }
+        img=slides/integration-plot0.svg

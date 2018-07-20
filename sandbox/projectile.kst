@@ -1,0 +1,34 @@
+title: Projectile Motion
+scripts: [/three.js, script.js]
+
+/*
+    ball at initial position at t = default, 2
+    ball undergoes projectile motion at t = 1, 3
+*/
+
+// For the second projectile motion, we want to include the graph
+// so we make the 3D layer smaller and move it to the left
+slide#3D
+{
+1,3: {},
+2: {S: 0.67, T: [-0.25, 0.05]}
+}
+
+// The slide containing all the graph objects is hidden at first
+// then comes into view at t = 2
+slide
+{
+default: {T: [.45]},
+2: {T: [0, -0.05]}
+}
+    // This is the line of the graph,
+    // appears within the same time as
+    // the 3D animation
+    img=slides/projectile-line.svg sweep=left
+    {
+    default: {sweep: .585},
+    3: {sweep: .92, dt: 2500ms, ease: linear}
+    }
+
+    // This is the axis of the graph
+    img=slides/projectile-plot.svg

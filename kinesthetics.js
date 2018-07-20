@@ -212,7 +212,7 @@ function slidesObjToHTML(slides, options={jstr: "j-"}, callback) {
 
     let tmpStyle = {}
     for (let t0Str in slides[j].state) {
-      t0 = (t0Str.toLowerCase() == "default") ? -Infinity:add(t0Str, offset)
+      let t0 = (t0Str.toLowerCase() == "default") ? -Infinity:add(t0Str, offset)
       if (isNaN(t0)) {
         callback(new Error(`State "${t0Str}" is not a number`))
         return
@@ -320,7 +320,7 @@ function render(slides, options = {}, callback) {
     callback = options
     options = {}
   }
-  renderSingle = options.renderSingle || false
+  options.renderSingle = options.renderSingle || false
   options.resourceDir = options.resourceDir || "/resources"
 
   let slidesObj = {
@@ -359,11 +359,11 @@ function render(slides, options = {}, callback) {
           slidesObj.body += `\n<script>${options.scripts[script]}</script>`
         } else {
           if (script.match(/^\/[^\/]/) != null)
-            script = path.join((renderSingle ? __dirname:"") + options.resourceDir, script)
-          else if (renderSingle)
+            script = path.join((options.renderSingle ? __dirname:"") + options.resourceDir, script)
+          else if (options.renderSingle)
             script = path.join(slidesPath, script)
 
-          if (renderSingle) {
+          if (options.renderSingle) {
             try {
               slidesObj.body += `\n<script>${fs.readFileSync(script)}</script>`
             } catch (err) {
@@ -388,11 +388,11 @@ function render(slides, options = {}, callback) {
       slidesObj.styles.forEach((style) => {
 
         if (style.match(/^\/[^\/]/) != null)
-          style = path.join((renderSingle ? __dirname:"") + options.resourceDir, style)
-        else if (renderSingle)
+          style = path.join((options.renderSingle ? __dirname:"") + options.resourceDir, style)
+        else if (options.renderSingle)
           style = path.join(slidesPath, style)
 
-        if (renderSingle)
+        if (options.renderSingle)
           try {
             slidesObj.head += `\n<style>${fs.readFileSync(style)}</style>`
           } catch (err) {
@@ -449,7 +449,7 @@ function render(slides, options = {}, callback) {
                       for (let key in obj)
                         if (typeof slides != "object" || Object.keys(slides).indexOf(key) == -1)
                           slidesObj[key] = obj[key]
-                      slidesObjToHTML(slidesObj.slides, {dir: slidesPath, renderSingle: renderSingle}, slidesInjectHTML)
+                      slidesObjToHTML(slidesObj.slides, {dir: slidesPath, renderSingle: options.renderSingle}, slidesInjectHTML)
                     })
 
       if (options.isPath !== false)
@@ -469,7 +469,7 @@ function render(slides, options = {}, callback) {
       else
         doParse(slidesObj.slides)
     } else {
-      slidesObjToHTML(slidesObj.slides, {renderSingle: renderSingle}, slidesInjectHTML)
+      slidesObjToHTML(slidesObj.slides, {renderSingle: options.renderSingle}, slidesInjectHTML)
     }
   })
 }

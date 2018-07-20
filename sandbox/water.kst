@@ -1,0 +1,25 @@
+/*
+  =================================
+          t: Occurence
+  =================================
+    default: Camera too far away to see anything
+          1: Zooms in, water molecule floating around
+          2: Water stops floating but still vibrating
+          3: Vibrational mode changes
+*/
+
+title: 2 Vibrational Modes of Water
+
+// three.js is a library, so we put a slash in front
+// since it is a globally referenced script, while
+// script.js is a local script that would be in the
+// same folder as the kst file
+scripts: [/three.js, script.js]
+
+// slide#3D defines the ID of the slide to be called "3D"
+// It doesn't matter what it actually is, as long as we
+// are consistent in its use in the script below.
+slide#3D
+{
+1,2,3: {}
+}

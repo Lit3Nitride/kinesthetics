@@ -1,4 +1,4 @@
-var __dirname = "./",//"https://lit3nitride.github.io/kinesthetics/",
+var __dirname = "./",
     path = {
       resolve: (p) => p
         .replace(/(\:?)\/\/+/g, (colon, str) => {
@@ -45,10 +45,13 @@ var __dirname = "./",//"https://lit3nitride.github.io/kinesthetics/",
           req.overrideMimeType("text/plain")
           req.onreadystatechange = () => {
             if (req.readyState == 4)
-              if (req.status == 200)
+              if (req.status == 200) {
                 callback(null, files[file] = req.responseText)
-              else
-                callback(`"${file}" cannot be read.`, "{}")
+              } else {
+                var err = new Error(`"${file}" cannot be read.`)
+                err.code = "ENOENT"
+                callback(err, "{}")
+              }
           }
           req.open("GET", file, true)
           req.send()
