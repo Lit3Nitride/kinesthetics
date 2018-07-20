@@ -11,10 +11,15 @@ presentation slides with state-based (keyframe-based) animation.
 
 ### Examples
 
-The [slides for the seminar](https://lit3nitride.github.io/kinesthetics/talk/)
-I will be giving on 2018-06-28 is written with this programme,
-and the source can be found in the
-[gh-pages branch](https://github.com/Lit3Nitride/kinesthetics/tree/gh-pages).
+The [slides for the seminar](https://lit3nitride.github.io/kinesthetics/talk.html)
+I gave is written with this programme,
+and the source can be found in the `examples` folder.
+
+Some examples you can play around with in the sandbox are
+1. [Integration Graphs](https://lit3nitride.github.io/kinesthetics/sandbox.html#integration)
+2. [2 Vibrational Modes of Water](https://lit3nitride.github.io/kinesthetics/sandbox.html#water)
+3. [Projectile Motion](https://lit3nitride.github.io/kinesthetics/sandbox.html#projectile)
+
 
 Also, below are other examples that were not made using this programme in
 particular, but are primitives to and illustrative of what this aims to
@@ -37,7 +42,7 @@ title: Kinesthetics
 aspect: 16/9
 // Aspect ratio of slides, given as width/height
 
-scripts: [three.js]
+scripts: [/three.js]
 // Javascript files to be included.
 // If three.js is attached, the three.js plugin for
 // kinesthetics will be included automatically.
@@ -45,10 +50,6 @@ scripts: [three.js]
 background: #f0f0f0
 // Background colour of slides
 // Given in hex colour
-
-backgroundInverted: #0f0f0f
-// Inverse of background colour
-// Used for on-screen tools
 
 
 /* ========================= */
@@ -78,15 +79,13 @@ slide
 
 /* ======== types ======== */
 
-img=path/to/image.svg
+img=slides/ball-0.svg
 // An image slide, where the image file is
 // relative to the location of the kst file
 
-import=path/to/file.kst
+import=example0.kst
 // Link to another kst file, that presentation
 // would be concatenated into this kst file
-// (three.js breaks due to path
-// via import, for now)
 //
 // This allows you to break the presentation down
 // into tiny parts, then bring them together after
@@ -111,7 +110,7 @@ default: {sweep: 0.2}
 // reveals that amount, intepretated as a ratio
 // of the slide dimension.
 
-import=a.kst offset=1.23
+import=example.kst offset=1.23
 /* ----------------- */
 /*  offset = NUMBER  */
 /* ----------------- */
@@ -144,36 +143,36 @@ slide
 // there will be 3 slides/stops excluding
 // the default view)
 
-slide
+img=slides/ball-1.svg
 {
-  default:
-  {
-    // Transform origin (usefuly for rotations)
-    O: 0,
+    default, 1: {
+        // Transform origin (useful for rotations)
+        O: 0,
 
-    // Translate
-    T: 0.5,
-    T: [0.5],
-    T: [0.2, 0.3],
+        // Translate
+        T: 0.5,
+        T: [0.5],
+        T: [0.2, 0.3],
 
-    // Rotate
-    R: 1.57,
-    R: 90deg,
+        // Rotate
+        R: 1.57,
+        R: 90deg,
 
-    // Scale
-    S: 0.2,
+        // Scale
+        S: 0.2,
 
-    // Easing
-    ease: linear,
+        // Easing
+        ease: linear,
 
-    // Transition duration
-    dt: 0.5s,
+        // Transition duration
+        dt: 0.5s,
 
-    // Transition delay
-    t0: 0.1s,
+        // Transition delay
+        t0: 0.1s,
 
-    opacity: 0
-  }
+        opacity: 0
+    },
+    0.1: {opacity: 1, T: 0}
 }
 ```
 

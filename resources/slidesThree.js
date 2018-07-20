@@ -11,11 +11,33 @@ function toString(a) {
   return a
 }
 
-function ease(t, dt, t0) {
-  t = (t-t0)/dt
-  return t < 0 ? 0:
-         t > 1 ? 1:
-         t < .5 ? 2*t*t:4*t-2*t*t-1
+var ease = {
+  cubic: function(t, x0, x1) {
+    return (x1-x0)*(t < .5 ? 2*t*t:4*t-2*t*t-1)+x0
+  },
+  linear: function(t, x0, x1) {
+    return (x1-x0)*t + x0
+  }
+}
+
+function doEase(t, x0, x1, easeFunc) {
+  easeFunc = easeFunc || ease.cubic
+  return t <= 0 ? x0:
+         t >= 1 ? x1:
+         easeFunc(t, x0, x1)
+}
+
+function validateEase(easeFunc) {
+  var isValid= [true, true]
+  for (var i=0; i<5; i++) {
+    var x = [
+              1E2*(Math.random()-.5),
+              1E2*(Math.random()-.5)
+            ]
+    for (var j=0; j<2; j++)
+      isValid[j] = isValid[j] && easeFunc(j, x[0], x[1]) == x[j]
+  }
+  return isValid
 }
 
 var states = {default: []},
@@ -41,9 +63,13 @@ function triggerCamera() {
   controls.enabled = !window.enableCamera
 }
 
+var slideUnreadyCount = 0
 function onSlideReady() {
   if (typeof scene == "undefined")
-    return setTimeout(onSlideReady, 500)
+    if (slideUnreadyCount++ < 5)
+      return setTimeout(onSlideReady, 500)
+    else
+      return window.disableSlideChange = false
   if (typeof THREE.OrbitControls != "undefined") {
     window.enableCamera = false
     controls = new THREE.OrbitControls(camera)
@@ -52,7 +78,6 @@ function onSlideReady() {
     controls.zoomSpeed = 3.2
     controls.panSpeed = 0.8
     controls.enableZoom = true
-    //controls.enableKeys = false
     controls.update()
   }
   setTimeout(function() {
@@ -197,34 +222,62 @@ function addToState(slide, obj, key, value, dt) {
 
   clearTimeout(reloadStatesTimeout)
 
-  dt = (typeof dt != "undefined") ? dt:750
-
-  if (typeof dt == "string")
+  var easeFunc
+  if (typeof dt == "object" && dt.ease) {
+    easeFunc = dt.ease
+    dt = dt.dt
+  }
+  if (typeof dt == "function") {
+    easeFunc = dt
+    dt = undefined
+  }
+  if (typeof dt == "undefined") {
+    dt = 750
+  } else if (typeof dt == "string") {
     dt = parseInt(
           dt
           .replace("ms", "")
           .replace("s", 1000)
           .replace("min", 60*1000)
         )
+    }
+  if (typeof easeFunc != "undefined") {
+    var isValidEase = validateEase(easeFunc),
+        isValidString = "The "
+    if (!(isValidEase[0] && isValidEase[1])) {
+      if (!isValidEase[0])
+        isValidString += "start"
+      if (!isValidEase[1])
+        if (!isValidEase[0])
+          isValidString += " and end points seem"
+        else
+          isValidString += "end point seems"
+      else
+        isValidString += " point seems"
+      isValidString += " to be invalid for the ease function\n\n"
+      isValidString += easeFunc.toString()
+      console.warn(isValidString)
+    }
+  }
 
   if (typeof key == "number") {
     for (var i=0; i<Object.keys(obj).length; i++) {
       if (Object.keys(obj)[i].indexOf("$") == -1)
-        states[slide].push({obj: obj, key: Object.keys(obj)[i], value: key, dt: value})
+        states[slide].push({obj: obj, key: Object.keys(obj)[i], value: key, dt: value || dt, ease: easeFunc})
     }
   } else if (typeof key == "object") {
     if (Array.isArray(key)) {
       for (var i=0; i<Math.min(key.length, Object.keys(obj).length); i++) {
-        states[slide].push({obj: obj, key: Object.keys(obj)[i], value: key[i], dt: value})
+        states[slide].push({obj: obj, key: Object.keys(obj)[i], value: key[i], dt: value || dt, ease: easeFunc})
       }
     } else {
-      keys = Object.Keys(key)
+      keys = Object.keys(key)
       for (var i=0; i<keys.length; i++) {
-        states[slide].push({obj: obj, key: keys[i], value: key[keys[i]], dt: value})
+        states[slide].push({obj: obj, key: keys[i], value: key[keys[i]], dt: value || dt, ease: easeFunc})
       }
     }
   } else {
-    states[slide].push({obj: obj, key: key, value: value, dt: dt})
+    states[slide].push({obj: obj, key: key, value: value, dt: dt, ease: easeFunc})
   }
 
   if (priorObjs[tMapped.indexOf(slide)-1] === true)
@@ -278,7 +331,8 @@ function animate(t) {
         if (!stateObj.from)
           continue
         var valFrom = stateObj.from[anim.arrived],
-            valTo = stateObj.value
+            valTo = stateObj.value,
+            easeFunc = stateObj.ease
 
         if (typeof valTo == "function" && (typeof stateObj.obj["$" + stateObj.key] == "undefined" || (stateObj.obj["$" + stateObj.key].toString() != valTo.toString()))) {
           stateObj.obj["$" + stateObj.key] = valTo
@@ -291,7 +345,7 @@ function animate(t) {
         if (valFrom === false)
           stateObj.obj[stateObj.key] = valTo
         else
-          stateObj.obj[stateObj.key] = (valTo - valFrom)*ease(t, stateObj.dt, anim.t0) + valFrom
+          stateObj.obj[stateObj.key] = doEase((t-anim.t0)/stateObj.dt, valFrom, valTo, easeFunc)
 
         if ((anim.t0 + stateObj.dt) < t)
           stateObj.from[anim.arrived] = false
