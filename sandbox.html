@@ -231,6 +231,11 @@ for (var i=0; i&lt;lights.length; i++) {
         hasStorage = typeof(Storage) !== "undefined",
         subPage = window.location.hash.substr(1) || ""
 
+    try {
+      localStorage
+    } catch {
+      hasStorage = false
+    }
 
     editor.setTheme("ace/theme/monokai")
     editor.session.setUseSoftTabs(true)
@@ -334,7 +339,7 @@ for (var i=0; i&lt;lights.length; i++) {
       reqScript.overrideMimeType("text/plain")
       reqKst.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-          if (subPage && localStorage["kstSource_" + subPage] && localStorage["kstSource_" + subPage] != this.responseText)
+          if (subPage && hasStorage && localStorage["kstSource_" + subPage] && localStorage["kstSource_" + subPage] != this.responseText)
             editor.setValue(localStorage["kstSource_" + subPage], -1)
           else
             editor.setValue(this.responseText, -1)
@@ -343,7 +348,7 @@ for (var i=0; i&lt;lights.length; i++) {
       }
       reqScript.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-          if (subPage && localStorage["scriptSource_" + subPage] && localStorage["scriptSource_" + subPage] != this.responseText)
+          if (subPage && hasStorage && localStorage["scriptSource_" + subPage] && localStorage["scriptSource_" + subPage] != this.responseText)
             editorScript.setValue(localStorage["scriptSource_" + subPage], -1)
           else
             editorScript.setValue(this.responseText, -1)
