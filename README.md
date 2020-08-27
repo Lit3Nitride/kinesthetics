@@ -11,24 +11,23 @@ presentation slides with state-based (keyframe-based) animation.
 
 ### Examples
 
-The [slides for the seminar](https://lit3nitride.github.io/kinesthetics/talk.html)
+The [slides for the seminar](https://not-fred.github.io/kinesthetics/talk.html)
 I gave is written with this programme,
 and the source can be found in the `examples` folder.
 
 Some examples you can play around with in the sandbox are
-1. [Integration Graphs](https://lit3nitride.github.io/kinesthetics/sandbox.html#integration)
-2. [2 Vibrational Modes of Water](https://lit3nitride.github.io/kinesthetics/sandbox.html#water)
-3. [Projectile Motion](https://lit3nitride.github.io/kinesthetics/sandbox.html#projectile)
+1. [Integration Graphs](https://not-fred.github.io/kinesthetics/sandbox.html#integration)
+2. [2 Vibrational Modes of Water](https://not-fred.github.io/kinesthetics/sandbox.html#water)
+3. [Projectile Motion](https://not-fred.github.io/kinesthetics/sandbox.html#projectile)
 
 
-Also, below are other examples that were not made using this programme in
-particular, but are primitives to and illustrative of what this aims to
-achieve. These slides were coded by hand, whereas Kinesthetics automate
-much of the repetitive tasks.
-1. [Electromagnetic Presentation Slides](https://zaw.li/!/em)
-2. [Poetry and the Poetical Science](https://zaw.li/!/creative)
-3. [Kristang Collaborative Online Dictionary - Opening Video](https://festa.2017.kristang.com/a/)
-4. [The Promiscuous Nature of Graph Theory](https://zaw.li/!/scicom)
+Also, below are other examples of presentation slides that have been
+1. [Randomised Benchmarking](https://zaw.li/!/kinesthetics/fyp)
+2. [The Stern–Gerlach Experiment](https://zaw.li/!/kinesthetics/ep2)
+3. [Liquid Crystal Lenses](https://zaw.li/!/kinesthetics/em)
+4. [Poetry and the Poetical Science](https://zaw.li/!/kinesthetics/creative)
+5. [Kristang Collaborative Online Dictionary - Opening Video](https://festa.2017.kristang.com/a/)
+6. [The Promiscuous Nature of Graph Theory](https://zaw.li/!/kinesthetics/scicom)
 
 ### "Documentation"
 ```
